@@ -21,32 +21,6 @@ abstract class MySQLDAO implements IDAO {
 	protected $started = false;
 
 	/**
-	 * Удалить поля щзапрещенные для передачи через $rqst не администратором
-	 * static::$disallowedUser - список полей
-	 * @param $rqst
-	 * @return array
-	 */
-	public static function removeDisallowedUser($rqst) {
-		if (is_array($rqst))
-			foreach (static::$disallowedUser as  $v)
-				unset($rqst[$v]);
-		return $rqst;
-	}
-
-	/**
-	 * Отфильтровать поля, оставив разрешённые для обычного пользователя(не администратора)
-	 * static::$allowed - разрешенные
-	 * static::$disallowedUser - запрещенные
-	 * @param $rqst запрос
-	 * @return array
-	 */
-	public static function checkAllowedUser($rqst) {
-		$res = static::checkAllowed($rqst);
-		$res = static::removeDisallowedUser($res);
-		return $res;
-	}
-
-	/**
 	 * Проверить, все ли обязательные поля на месте
 	 */
 	public static function checkRequired($rqst, &$fields = null, $for = null) {
