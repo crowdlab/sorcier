@@ -1,0 +1,8 @@
+{
+	"project_id" : "webcore",
+	"conduit_uri" : "https://review.crowd-lab.com/",
+	"unit.engine" : "PhpunitTestEngine",
+	"lint.engine"               : "ArcanistSingleLintEngine",
+	"lint.engine.single.linter" : "ArcanistPhpcsLinter",
+	"phpunit_config" : "phpunit.xml"
+}
