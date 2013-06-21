@@ -24,6 +24,14 @@ abstract class BaseQueryHandler extends Tonic\Resource {
 	public function postPut() { }
 
 	/**
+	 * @method POST
+	 * @provides application/json
+	 */
+	function post() {
+		return $this->put();
+	}
+
+	/**
 	 * @method PUT
 	 * @provides application/json
 	 */
