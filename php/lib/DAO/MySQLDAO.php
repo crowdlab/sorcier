@@ -214,6 +214,7 @@ abstract class MySQLDAO implements IDAO {
 	public function push($kv, $ignore = false, $suffix = '') {
 		if (isset(static::$schema))
 			$kv = static::enforce(static::$schema, $kv);
+		if (is_array($suffix)) $suffix = '';
 		return $this->insert(array_keys($kv), array_values($kv), $ignore, $suffix);
 	}
 

@@ -60,11 +60,22 @@ trait CollectionTrait {
 		if ($value === false)
 			return ['error' => 'not modified', 'code' => 403];
 		$params = ['id_key' => static::IdKey, 'throw' => false];
-		if (isset($value[static::IdKey]))
+		if (isset($value['id']) && static::IdKey != 'id')
+			$value[static::IdKey] = $value['id'];
+		if (isset($value[static::IdKey])) {
+			// enforce query schema on value
+			if (isset(static::$schema)) {
+				if (isset(static::$schema[static::IdKey])) {
+					if (static::$schema[static::IdKey] == 'mongoid') {
+						$value[static::IdKey] = static::make_id($value[static::IdKey]);
+					}
+				}
+			}
 			$cond = [
 				static::IdKey => $value[static::IdKey],
 				static::$parent_key => $eid
 			];
+		}
 		return (isset($value[static::IdKey]))
 			// if only id specified, do nothing
 			? (count($value) > 1

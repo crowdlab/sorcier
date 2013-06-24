@@ -6,6 +6,7 @@ use Tonic;
  * Base class for rest collection query handlers
  */
 abstract class BaseQueryHandler extends Tonic\Resource {
+	use Shifter;
 	/**
 	 * precheck function can reject request if needed
 	 * @param $error Tonic\Response
@@ -45,8 +46,10 @@ abstract class BaseQueryHandler extends Tonic\Resource {
 		$error = [];
 		if (!static::precheck($params, $error))
 			return $error;
+		// we need to go deeper
+		list($uid, $cid) = $this->getShifted();
 		$cid = $cdao->addMod($uid, $params);
-		if (!is_int($cid)) {
+		if (is_array($cid) && isset($cid['error'])) {
 			$r = ['error' => 'use POST to modify existing values'];
 			return tonicResponse(Tonic\Response::BADREQUEST, $r);
 		}
@@ -59,7 +62,7 @@ abstract class BaseQueryHandler extends Tonic\Resource {
 	 * @provides application/json
 	 */
 	function get() {
-		$uid = $this->id;
+		list($uid, $cid) = $this->getShifted();
 		$dao = static::getDAO();
 		$r = $dao->get($uid);
 		return tonicResponse(Tonic\Response::OK, $r);

@@ -129,7 +129,9 @@ abstract class MongoDAO implements IDAO {
 		$fields = [];
 		foreach ($request as $k => $v) {
 			if (!in_array($k, $allowed, true)) continue;
-			if (isset(static::$checkers[$k]) && !call_user_func(static::$checkers[$k], $v))
+			if (isset(static::$checkers)
+					&& isset(static::$checkers[$k])
+					&& !call_user_func(static::$checkers[$k], $v))
 				continue;
 			if ($callback && is_callable($callback)) {
 				$v = $callback(array($k => $v));
@@ -145,12 +147,10 @@ abstract class MongoDAO implements IDAO {
 		}
 		if (count($fields) == 0)
 			\Common::die500('no fields to set', $request);
-		if (!is_object($id) && !is_array($id))
-			$id = new \MongoId($id);
-		$cond = is_array($id)
-			? [static::IdKey => $id]
+		$cond = (!is_object($id) && !is_array($id))
+			? [static::IdKey => new \MongoId($id)]
 			: $id;
-		$this->update($fields, $cond);
+		$r = $this->update(['$set' => $fields], $cond);
 		$res = ['message' => 'ok'];
 		if ($retval) {
 			// return selected values

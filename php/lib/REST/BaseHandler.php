@@ -6,6 +6,7 @@ use Tonic;
  * Base class for rest collection handlers
  */
 abstract class BaseHandler extends Tonic\Resource {
+	use Shifter;
 	/**
 	 * DAO must use CollectionTrait!
 	 */
@@ -13,7 +14,12 @@ abstract class BaseHandler extends Tonic\Resource {
 	/**
 	 * Post-modify function (after POST/DELETE)
 	 */
-	public function postMod() { }
+	protected function postMod() { }
+
+	/**
+	 * Function to check security on post/delete/get
+	 */
+	protected function securityCheck($method = 'get') { return true; }
 
 	/**
 	 * @method DELETE
@@ -21,9 +27,10 @@ abstract class BaseHandler extends Tonic\Resource {
 	 */
 	function delete() {
 		$id = $this->id;
-		if ($id != \UserSingleton::getInstance()->getId())
+		if ($id != \UserSingleton::getInstance()->getId()
+			|| !$this->securityCheck(__METHOD__))
 			return new Tonic\Response(Tonic\Response::FORBIDDEN);
-		$cid = $this->cid;
+		list($id, $cid) = $this->getShifted();
 		$cdao = static::getDAO();
 		$r = $cdao->delItem($id, $cid);
 		$this->postMod();
@@ -36,19 +43,20 @@ abstract class BaseHandler extends Tonic\Resource {
 	 */
 	function post() {
 		$uid = $this->id;
-		if ($uid != \UserSingleton::getInstance()->getId())
+		if ($uid != \UserSingleton::getInstance()->getId()
+			|| !$this->securityCheck(__METHOD__))
 			return new Tonic\Response(Tonic\Response::FORBIDDEN);
-		$cid = $this->cid;
+		list($id, $cid) = $this->getShifted();
 		$cdao = static::getDAO();
 		$params = (empty($_REQUEST))
 			? (array) $this->request->data
 			: $_REQUEST;
 		if (!isset($params['id']))
 			$params['id'] = $cid;
-		$r = $cdao->addMod($uid, $params);
+		$r = $cdao->addMod($id, $params);
 		$this->postMod();
 		// return new value
-		$r = $cdao->get($uid, $cid);
+		$r = $cdao->get($id, $cid);
 		return tonicResponse(Tonic\Response::OK, $r);
 	}
 
@@ -57,9 +65,10 @@ abstract class BaseHandler extends Tonic\Resource {
 	 * @provides application/json
 	 */
 	function get() {
-		$id = $this->id;
-		$cid = $this->cid;
+		list($id, $cid) = $this->getShifted();
 		$cdao = static::getDAO();
+		if (!$this->securityCheck(__METHOD__))
+			return new Tonic\Response(Tonic\Response::FORBIDDEN);
 		$r = $cdao->get($id, $cid);
 		return tonicResponse(Tonic\Response::OK, $r);
 	}
