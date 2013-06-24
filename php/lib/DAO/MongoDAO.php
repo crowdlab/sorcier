@@ -12,6 +12,8 @@ abstract class MongoDAO implements IDAO {
 
 	abstract protected function getName();
 
+	const IdKey = '_id';
+
 	protected $collection = null;
 
 	protected $insert_id = null;
@@ -111,7 +113,6 @@ abstract class MongoDAO implements IDAO {
 	 *   allowed  Optional поля (по умолчанию берутся из соответствующего DAO)
 	 *   callback вызов для пред-обработки пары ключ-значение
 	 *   retval   вернуть полученные значения
-	 *   id_key ключ идентификатора в базе (по умолчанию id)
 	 * @return [ 'message' => ok, 'rows' => 1, 'fields' => [...] ]
 	 */
 	public function modItem($request, $id, $params = []) {
@@ -119,7 +120,6 @@ abstract class MongoDAO implements IDAO {
 			'allowed'  => null,
 			'callback' => null,
 			'retval'   => true,
-			'id_key'   => '_id',
 		];
 		$params = array_append($params, $params_default);
 		foreach ($params as $k => $v)
@@ -148,13 +148,13 @@ abstract class MongoDAO implements IDAO {
 		if (!is_object($id) && !is_array($id))
 			$id = new \MongoId($id);
 		$cond = is_array($id)
-			? [$id_key => $id]
+			? [static::IdKey => $id]
 			: $id;
 		$this->update($fields, $cond);
 		$res = ['message' => 'ok'];
 		if ($retval) {
 			// return selected values
-			$r = $this->select(array_keys($fields), [$id_key => $id]);
+			$r = $this->select(array_keys($fields), [static::IdKey => $id]);
 			$res['fields'] = self::getFirst($r);
 		}
 		return $res;
@@ -272,7 +272,7 @@ abstract class MongoDAO implements IDAO {
 	 */
 	public static function remapId($v) {
 		// TODO: recursive
-		$v['id'] = (string) $v['_id'];
+		$v['id'] = (string) $v[static::IdKey];
 		unset($v['_id']);
 		return $v;
 	}
@@ -284,7 +284,7 @@ abstract class MongoDAO implements IDAO {
 		$items_mapped = [];
 		foreach ($items as $k => $v) {
 			if ($v['_id']) {
-				$v['id'] = (string) $v['_id'];
+				$v['id'] = (string) $v[static::IdKey];
 				unset($v['_id']);
 			}
 			$items_mapped[$k] = $v;

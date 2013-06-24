@@ -11,7 +11,7 @@ trait SelectListTrait {
 	 */
 	public function select_list($fields, $ids, $default_cond = [], $limit = null) {
 		$cond = $ids
-			? ['id' => ['$in' => $ids]]
+			? [static::IdKey => ['$in' => $ids]]
 			: $default_cond;
 		$join = implode(',', $ids);
 		return $this->select($fields, $cond, $limit,

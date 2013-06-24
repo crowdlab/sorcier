@@ -50,7 +50,7 @@ class QueryGenTest extends Testing\CoreTestBase {
 
 		// or
 		$fixture = ['$or' => ['a' => 5, 'b' => 10]];
-		$this->assertEquals(("(`a`=5 or `b`=10)"), DAO\QueryGen::make_cond($fixture));
+		$this->assertEquals(("((`a`=5 OR `b`=10))"), DAO\QueryGen::make_cond($fixture));
 
 		/* normal order */
 		$fixture = ['a' => ['>' => 5]];

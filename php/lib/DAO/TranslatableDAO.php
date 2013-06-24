@@ -12,6 +12,11 @@ class TranslatableDAO extends MongoDAO {
 		return 'translatable';
 	}
 
+	const EID = 'EID';
+	const EntKey  = '_entity';
+	const LangKey = '_lang';
+	const RowId = 'id';
+
 	/**
 	 * Translate row to specified language using Google Translate API
 	 * @param $row row
@@ -40,8 +45,8 @@ class TranslatableDAO extends MongoDAO {
 	 */
 	public function clearTranslations($id, $entity) {
 		$cond = [
-			'_entity' => $entity,
-			'id'      => $id
+			static::EntKey => $entity,
+			static::EID => $id
 		];
 		return $this->delete($cond);
 	}
@@ -54,17 +59,17 @@ class TranslatableDAO extends MongoDAO {
 	 * @param $fields   fields to filter
 	 * @param $lang     translation language (optional, default 'en')
 	 */
-	public function setTranslation($row, $entity, $fields = null, $lang = 'en') {
+	public function setTranslation($row, $entity, $fields = [], $lang = 'en') {
 		if ($fields) {
 			foreach($row as $k => $v) {
 				if (in_array($k, $fields, true)) continue;
-				if ($k == 'id') continue;
+				if ($k == static::EID) continue;
 				unset($row[$k]);
 			}
 		}
-		$cond = ['id' => $row['id']];
-		$row['_entity'] = $cond['_entity'] = $entity;
-		$row['_lang']   = $cond['_lang']   = $lang;
+		$cond = [static::EID => $row[static::RowId]];
+		$row[static::EntKey]  = $cond[static::EntKey]  = $entity;
+		$row[static::LangKey] = $cond[static::LangKey] = $lang;
 		return $this->update($row, $cond, ['upsert' => true, 'multi' => true]);
 	}
 
@@ -79,9 +84,9 @@ class TranslatableDAO extends MongoDAO {
 	 */
 	public function get($row, $entity, $fields = null, $lang = 'en') {
 		$cond = [
-			'id'      => $row['id'],
-			'_entity' => $entity,
-			'_lang'   => $lang,
+			static::EID     => $row[static::RowId],
+			static::EntKey  => $entity,
+			static::LangKey => $lang,
 		];
 		$r = $this->select([], $cond);
 		$tr = $this->fetch_assoc($r);
@@ -94,8 +99,8 @@ class TranslatableDAO extends MongoDAO {
 			}
 			return $row;
 		}
-		unset($tr['_entity']);
-		unset($tr['_lang']);
+		unset($tr[static::EntKey]);
+		unset($tr[static::LangKey]);
 		return array_merge($row, $tr);
 	}
 }

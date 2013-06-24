@@ -9,6 +9,8 @@ abstract class MySQLDAO implements IDAO {
 	use \DAO\Enforcer;
 	use \DAO\Helpers;
 
+	const IdKey = 'id';
+
 	abstract public function getName();
 
 	/**
@@ -372,7 +374,6 @@ abstract class MySQLDAO implements IDAO {
 	 *    allowed  Optional поля (по умолчанию берутся из соответствующего DAO)
 	 *    callback вызов для пред-обработки пары ключ-значение
 	 *    retval   вернуть полученные значения
-	 *    id_key   ключ идентификатора в базе (по умолчанию id)
 	 *    schema   схема для возврата
 	 *    throw    кидать ли ошибку если нет изменений
 	 *    special  проверка особых условий (права доступа и т.п.), возвращает true если ок
@@ -384,7 +385,6 @@ abstract class MySQLDAO implements IDAO {
 			'allowed'  => null,
 			'callback' => null,
 			'diff'     => false,
-			'id_key'   => 'id',
 			'retval'   => true,
 			'schema'   => [],
 			'special'  => null,
@@ -403,7 +403,7 @@ abstract class MySQLDAO implements IDAO {
 		$new_extra = static::filterExtra($request);
 		if ($throw && !count($fields) && !count($new_extra))
 			\Common::die500('no fields to set', $request);
-		$cond = is_array($id) ? $id : [$id_key => $id];
+		$cond = is_array($id) ? $id : [static::IdKey => $id];
 		$ar = 0;
 		if ($diff) {
 			$r = FnMySQL::select(array_keys($fields))
@@ -473,8 +473,8 @@ abstract class MySQLDAO implements IDAO {
 	/**
 	 * Существует проект/задача
 	 */
-	public function exists($cond, $idkey = 'id') {
-		if (!is_array($cond)) $cond = [$idkey => $cond];
+	public function exists($cond) {
+		if (!is_array($cond)) $cond = [static::IdKey => $cond];
 		$r = $this->select([1], $cond);
 		return $r && $this->num_rows($r) > 0;
 	}
