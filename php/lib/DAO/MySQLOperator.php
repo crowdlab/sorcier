@@ -285,40 +285,65 @@ class MySQLOperator {
 		return $this;
 	}
 
+	protected function genSelect($cond) {
+		$join = '';
+		foreach ($this->join as $v) {
+			$join .= " {$v['prefix']} JOIN {$v['table']} ON " .
+				QueryGen::make_cond($v['on']);
+		}
+		$q = "SELECT " .
+			QueryGen::make_fields($this->fields) .
+			" FROM {$this->from} $join WHERE $cond";
+		if ($this->groupby) {
+			$q .= " GROUP BY {$this->groupby}";
+			if ($this->having) {
+				$q .= " HAVING " .
+					QueryGen::make_cond($this->having);
+			}
+		}
+		if ($this->orderby) {
+			$q .= " ORDER BY {$this->orderby}";
+			if ($this->orderbyDesc)
+				$q .= " DESC";
+		}
+		if ($this->limit) {
+			if ($this->skip)
+				$q .= " LIMIT {$this->skip}, {$this->limit}";
+			else
+				$q .= " LIMIT {$this->limit}";
+		}
+		return $q;
+	}
+
+	protected function genInsert() {
+		$what = array_values($this->fields);
+		$fields = array_keys($this->fields);
+		$ins = QueryGen::make_insert($what);
+		$fields_s = '(' . QueryGen::make_fields($fields) . ')';
+		$ign = $this->ignore ? ' IGNORE' : '';
+		if (is_object($this->suffix))
+			$this->suffix = (string) $this->suffix;
+		// on duplicate key update
+		if (isset($this->set_dup) && $this->set_dup) {
+			$set_kv = QueryGen::make_set_kv($this->set_dup);
+			$sset = implode(',', $set_kv);
+			$this->suffix = " ON DUPLICATE KEY UPDATE $sset";
+		}
+		$q = "INSERT$ign
+			INTO {$this->from} $fields_s
+			VALUES $ins
+			{$this->suffix}";
+		return $q;
+	}
 	/**
 	 * сгенерировать текст запроса
 	 */
 	public function __toString() {
-		if ($this->condition == null) $this->condition = array();
+		if ($this->condition == null) $this->condition = [];
 		$cond = QueryGen::make_cond($this->condition);
 		switch($this->class) {
 			case "select":
-				$join = '';
-				foreach ($this->join as $v) {
-					$join .= " {$v['prefix']} JOIN {$v['table']} ON " .
-						QueryGen::make_cond($v['on']);
-				}
-				$q = "SELECT " .
-					QueryGen::make_fields($this->fields) .
-					" FROM {$this->from} $join WHERE $cond";
-				if ($this->groupby) {
-					$q .= " GROUP BY {$this->groupby}";
-					if ($this->having) {
-						$q .= " HAVING " .
-							QueryGen::make_cond($this->having);
-					}
-				}
-				if ($this->orderby) {
-					$q .= " ORDER BY {$this->orderby}";
-					if ($this->orderbyDesc)
-						$q .= " DESC";
-				}
-				if ($this->limit) {
-					if ($this->skip)
-						$q .= " LIMIT {$this->skip}, {$this->limit}";
-					else
-						$q .= " LIMIT {$this->limit}";
-				}
+				$q = $this->genSelect($cond);
 				break;
 			case "count":
 				$q = "SELECT " .
@@ -326,23 +351,7 @@ class MySQLOperator {
 					" FROM {$this->from} WHERE $cond";
 				break;
 			case "insert":
-				$what = array_values($this->fields);
-				$fields = array_keys($this->fields);
-				$ins = QueryGen::make_insert($what);
-				$fields_s = '(' . QueryGen::make_fields($fields) . ')';
-				$ign = $this->ignore ? ' IGNORE' : '';
-				if (is_object($this->suffix))
-					$this->suffix = (string) $this->suffix;
-				// on duplicate key update
-				if (isset($this->set_dup) && $this->set_dup) {
-					$set_kv = QueryGen::make_set_kv($this->set_dup);
-					$sset = implode(',', $set_kv);
-					$this->suffix = " ON DUPLICATE KEY UPDATE $sset";
-				}
-				$q = "INSERT$ign
-					INTO {$this->from} $fields_s
-					VALUES $ins
-					{$this->suffix}";
+				$q = $this->genInsert();
 				break;
 			case "update":
 				$set_kv = QueryGen::make_set_kv($this->set);
