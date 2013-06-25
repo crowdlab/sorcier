@@ -11,7 +11,7 @@ abstract class BaseQueryHandler extends Tonic\Resource {
 	 * precheck function can reject request if needed
 	 * @param $error Tonic\Response
 	 */
-	public static function precheck($params, $error) {
+	public function precheck($params, $error) {
 		return true;
 	}
 
@@ -44,7 +44,7 @@ abstract class BaseQueryHandler extends Tonic\Resource {
 		$params = (array) $this->request->data;
 
 		$error = [];
-		if (!static::precheck($params, $error))
+		if (!$this->precheck($params, $error))
 			return $error;
 		// we need to go deeper
 		list($uid, $cid) = $this->getShifted();

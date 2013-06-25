@@ -16,11 +16,13 @@ trait SubcollectionMongo {
 	 */
 	public function get($uid) {
 		$dao = static::getParentDAO();
-		$name = $dao->getName();
+		$name = $this->getName();
 		$cond = [static::$parent_key => static::make_id($uid)];
 		$r = $dao->select([$name], $cond);
-		// todo: schema?
-		return $dao->fetch_all($r);
+		$ret = $dao->fetch_assoc($r);
+		if (!isset($ret[$name]) || !count($ret[$name]))
+			return [];
+		return $ret[$name];
 	}
 
 	/**
@@ -31,7 +33,7 @@ trait SubcollectionMongo {
 	public function add($uid, $value) {
 		$value = static::checkAllowed($value);
 		$dao = static::getParentDAO();
-		$name = $dao->getName();
+		$name = $this->getName();
 		if (!isset($value[static::IdKey]))
 			$value[static::IdKey] = new \MongoId();
 		else if (is_string($value[static::IdKey]))
@@ -52,9 +54,9 @@ trait SubcollectionMongo {
 	public function delItem($uid, $id) {
 		$cond = [static::$parent_key => static::make_id($uid)];
 		$dao = static::getParentDAO();
-		$name = $dao->getName();
+		$name = $this->getName();
 		$pull = ['$pull' => [
-			$name => [static::IdKey => $id]
+			$name => [static::IdKey => static::make_id($id)]
 		]];
 		return $dao->update($pull, $cond);
 	}
@@ -67,7 +69,7 @@ trait SubcollectionMongo {
 	public function clean($uid) {
 		$cond = [static::$parent_key => static::make_id($uid)];
 		$dao = static::getParentDAO();
-		$name = $dao->getName();
+		$name = $this->getName();
 		$unst = ['$unset' => [$name => 1]];
 		return $dao->update($unst, $cond);
 	}
@@ -77,12 +79,13 @@ trait SubcollectionMongo {
 	 */
 	protected function mod($value, $cond, $subcond) {
 		$dao = static::getParentDAO();
-		$name = $dao->getName();
+		$name = $this->getName();
 		$key = "$name.".static::IdKey;
 		$cond[$key] = $subcond[static::IdKey];
 		$mv = [];
 		foreach ($value as $k => $v)
-			$mv["$name.$.$k"] = $v;
+			if (in_array($k, static::$allowed, true))
+				$mv["$name.$.$k"] = $v;
 		$st = ['$set' => $mv];
 		$dao->update($st, $cond);
 	}
@@ -108,9 +111,11 @@ trait SubcollectionMongo {
 		if ($value === false)
 			return ['error' => 'not modified', 'code' => 403];
 		$params = ['throw' => false];
+		if (isset($value['id']) && static::IdKey != 'id')
+			$value[static::IdKey] = $value['id'];
 		if (isset($value[static::IdKey])) {
 			$cond = [static::$parent_key => static::make_id($eid)];
-			$subcond = [static::IdKey => $value[static::IdKey]];
+			$subcond = [static::IdKey => static::make_id($value[static::IdKey])];
 		}
 		return (isset($value[static::IdKey]))
 			// if only id specified, do nothing
