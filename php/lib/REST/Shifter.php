@@ -30,6 +30,9 @@ trait Shifter {
 					break;
 			}
 		} else {
+			$uid = $this->id; // 1st param
+			if (!$one)
+				$cid = $this->cid; // 2rd param
 		}
 		return [$uid, $cid];
 	}
