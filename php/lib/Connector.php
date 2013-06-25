@@ -174,7 +174,7 @@ final class Connector {
 		);
 		if (!$this->mysqlInst) {
 			\logger\Log::instance()->logCrit('MySQL init error');
-			if ($config['daemon'])
+			if (isset($config['daemon']) && $config['daemon'])
 				return false;
 			\Common::die500('database error');
 		}
