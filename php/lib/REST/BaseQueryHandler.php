@@ -12,7 +12,7 @@ abstract class BaseQueryHandler extends Tonic\Resource {
 	 * precheck function can reject request if needed
 	 * @param $error Tonic\Response
 	 */
-	public function precheck($params, $error) {
+	public function precheck($params, &$error = null) {
 		return true;
 	}
 
