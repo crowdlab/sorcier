@@ -4,13 +4,10 @@ use REST;
 use Tonic;
 /**
  * Base class for rest collection handlers
+ * Please implement static getDAO(), which returns collection DAO
  */
 abstract class BaseHandler extends Tonic\Resource {
 	use Shifter;
-	/**
-	 * DAO must use CollectionTrait!
-	 */
-	abstract public static function getDAO();
 	/**
 	 * Post-modify function (after POST/DELETE)
 	 */
