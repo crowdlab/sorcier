@@ -35,7 +35,8 @@ abstract class BaseQueryHandler extends Tonic\Resource {
 	 */
 	function put() {
 		$uid = $this->id;
-		if ($uid != \UserSingleton::getInstance()->getId())
+		$u = \UserSingleton::getInstance();
+		if ($uid != $u->getId() && !$u->isAdmin())
 			return new Tonic\Response(Tonic\Response::FORBIDDEN);
 		$cdao = static::getDAO();
 		$params = (array) $this->request->data;

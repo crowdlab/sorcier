@@ -24,7 +24,8 @@ abstract class BaseHandler extends Tonic\Resource {
 	 */
 	function delete() {
 		$id = $this->id;
-		if ($id != \UserSingleton::getInstance()->getId()
+		$u = \UserSingleton::getInstance();
+		if ($id != $u->getId() && !$u->isAdmin()
 			|| !$this->securityCheck(__METHOD__))
 			return new Tonic\Response(Tonic\Response::FORBIDDEN);
 		list($id, $cid) = $this->getShifted();
@@ -40,7 +41,8 @@ abstract class BaseHandler extends Tonic\Resource {
 	 */
 	function post() {
 		$uid = $this->id;
-		if ($uid != \UserSingleton::getInstance()->getId()
+		$u = \UserSingleton::getInstance();
+		if ($uid != $u->getId() && $u->isAdmin()
 			|| !$this->securityCheck(__METHOD__))
 			return new Tonic\Response(Tonic\Response::FORBIDDEN);
 		list($id, $cid) = $this->getShifted();
