@@ -1,5 +1,9 @@
 <?php
 class Config {
+	public static function getUrlPrefix() {
+		return static::get('proto').'://'.static::get('host');
+	}
+
 	/** get config value */
 	public static function get($v, $default = null, $config = null) {
 		if ($config == null)
@@ -14,7 +18,7 @@ class Config {
 			}
 			return $co;
 		}
-		return (isset($config[$v])) ? $v : $default;
+		return (isset($config[$v])) ? $config[$v] : $default;
 	}
 }
 ?>
