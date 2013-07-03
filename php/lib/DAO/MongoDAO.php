@@ -43,20 +43,17 @@ abstract class MongoDAO implements IDAO {
 
 	protected function setCollection() {
 		$mongo = \Connector::getInstance()->getMongo();
-		global $config;
 		if (!$mongo) {
-			if ($config['daemon']) return false;
+			if (\Config::get('daemon')) return false;
 			\Common::die500('database error');
 		}
-		$this->db = $mongo->selectDB($config['mongo_db']);
-		$this->collection = $mongo->selectCollection(
-			$config['mongo_db'],
-			$this->getName()
-		);
+		$db = \Config::get('mongo_db');
+		$this->db = $mongo->selectDB($db);
+		$this->collection = $mongo->selectCollection($db, $this->getName());
 
 		if (!$this->collection) {
 			$err  = 'Mongo error selecting collection';
-			$info = ['mongo_db' => $config['mongo_db']];
+			$info = ['mongo_db' => $db];
 			\logger\Log::instance()->logError($err,	$info);
 			\Common::die500('database error');
 		}

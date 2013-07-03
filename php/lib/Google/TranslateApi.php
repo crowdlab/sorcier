@@ -12,9 +12,8 @@ class TranslateApi {
 	 * Get instance
 	 */
 	public static function getInstance() {
-		global $config;
 		if (static::$instance == null)
-			static::$instance = new static($config['google_shortener_key']);
+			static::$instance = new static(\Config::get('google_shortener_key'));
 		return static::$instance;
 	}		
 

@@ -133,7 +133,7 @@ class Log {
 	 *
 	 * @var array
 	 */
-	private static $instances = array();
+	private static $instances = [];
 
 	/**
 	 * Partially implements the Singleton pattern. Each $logDirectory gets one
@@ -152,9 +152,7 @@ class Log {
 			if (count(self::$instances) > 0) {
 				return current(self::$instances);
 			} else {
-				global $config;
-				$logDirectory = isset($config['logs']['path'])
-					? $config['logs']['path'] : "/var/log/mhlog/";
+				$logDirectory = \Config::get(['logs', 'path'], '/var/log/mhlog/');
 			}
 		}
 

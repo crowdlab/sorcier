@@ -83,12 +83,11 @@ abstract class MySQLDAO implements IDAO {
 	public static function perform_query($q) {
 		\logger\Log::instance()->logDebug("SQL: $q");
 		$_DB = \Connector::getInstance()->getMySQL();
-		global $config;
 		if (!$_DB) {
-			if ($config['daemon']) return false;
+			if (\Config::get('daemon')) return false;
 			\Common::die500('database error');
 		}
-		if (isset($config['daemon']) && ($config['daemon'])) {
+		if (\Config::get('daemon')) {
 			if (!mysqli_ping($_DB)) {
 				$_DB = \Connector::getInstance()->getMySQL(true);
 			}
@@ -99,8 +98,8 @@ abstract class MySQLDAO implements IDAO {
 		$err = mysqli_error($_DB);
 		\logger\Log::instance()->logError("perform_query error",
 			['error' => $err, 'query' => $q]);
-		if ($config['daemon']) return false;
-		if (isset($config['debug']) && $config['debug'])
+		if (\Config::get('daemon')) return false;
+		if (\Config::get('debug'))
 			\Common::dieError(['error' => $err, 'query' => $q]);
 		\Common::die500('database error');
 	}
