@@ -8,5 +8,9 @@
 	"mongo_port": 27017,
 	"mongo_db": "testdb",
 	"proto": "http",
-	"host": "mindhunters.cc"
+	"host": "mindhunters.cc",
+    "logs": {
+        "path": "/var/webcore/logs/test/",
+        "default": 6
+    }
 }

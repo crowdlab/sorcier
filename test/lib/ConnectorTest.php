@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../../php/lib/autoload.php.inc';
-include_once __DIR__ . '/../../../mindhunters/php/inc/config.php';
 
 /**
  * Тест операций
@@ -9,6 +8,11 @@ include_once __DIR__ . '/../../../mindhunters/php/inc/config.php';
  * @backupStaticAttributes disabled
  */
 class ConnectorTest extends Testing\CoreTestBase {
+
+	public  static function customSetUpBeforeClass() {
+		include __DIR__ . '/../../../mindhunters/php/inc/config.php.inc';
+	}
+
 	public function testGetElastic() {
 		$elastic = Connector::getInstance()->getElastic();
 		$this->assertEquals('Elastica\Index', get_class($elastic));
