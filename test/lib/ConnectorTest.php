@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../php/lib/autoload.php.inc';
+include_once __DIR__ . '/../../../mindhunters/php/inc/config.php';
 
 /**
  * Тест операций
