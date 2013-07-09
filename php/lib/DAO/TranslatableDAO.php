@@ -63,10 +63,11 @@ class TranslatableDAO extends MongoDAO {
 		if ($fields) {
 			foreach($row as $k => $v) {
 				if (in_array($k, $fields, true)) continue;
-				if ($k == static::EID) continue;
+				if ($k == static::RowId) continue;
 				unset($row[$k]);
 			}
 		}
+		if (!$row) return;
 		$cond = [static::EID => $row[static::RowId]];
 		$row[static::EntKey]  = $cond[static::EntKey]  = $entity;
 		$row[static::LangKey] = $cond[static::LangKey] = $lang;
