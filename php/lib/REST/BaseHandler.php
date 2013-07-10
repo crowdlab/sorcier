@@ -42,8 +42,8 @@ abstract class BaseHandler extends Tonic\Resource {
 	function post() {
 		$uid = $this->id;
 		$u = \UserSingleton::getInstance();
-		if ($uid != $u->getId() && $u->isAdmin()
-			|| !$this->securityCheck(__METHOD__))
+		if (!($uid == $u->getId() && $this->securityCheck(__METHOD__)
+			|| $u->isAdmin()))
 			return new Tonic\Response(Tonic\Response::FORBIDDEN);
 		list($id, $cid) = $this->getShifted();
 		$cdao = static::getDAO();
