@@ -56,11 +56,21 @@ abstract class BaseQueryHandler extends Tonic\Resource {
 	}
 
 	/**
+	 * Getter access control
+	 * @return true if allowed, false otherwise
+	 */
+	protected function getAccessCheck($uid, $cid) {
+		return true;
+	}
+
+	/**
 	 * @method GET
 	 * @provides application/json
 	 */
 	function get() {
 		list($uid, $cid) = $this->getShifted();
+		if (!static::getAccessCheck($uid, $cid))
+			return new Tonic\Response(Tonic\Response::FORBIDDEN);
 		$dao = static::getDAO();
 		$r = $dao->get($uid);
 		return tonicResponse(Tonic\Response::OK, $r);
