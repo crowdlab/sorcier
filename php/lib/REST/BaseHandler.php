@@ -23,7 +23,7 @@ abstract class BaseHandler extends Tonic\Resource {
 	 * @provides application/json
 	 */
 	function delete() {
-		$id = $this->id;
+		$id = $this->getUid();
 		$u = \UserSingleton::getInstance();
 		if ($id != $u->getId() && !$u->isAdmin()
 			|| !$this->securityCheck(__METHOD__))
@@ -35,12 +35,16 @@ abstract class BaseHandler extends Tonic\Resource {
 		return tonicResponse(Tonic\Response::OK, $r);
 	}
 
+	protected function getUid() {
+		return $this->id;
+	}
+
 	/**
 	 * @method POST
 	 * @provides application/json
 	 */
 	function post() {
-		$uid = $this->id;
+		$uid = $this->getUid();
 		$u = \UserSingleton::getInstance();
 		if (!($uid == $u->getId() && $this->securityCheck(__METHOD__)
 			|| $u->isAdmin()))
