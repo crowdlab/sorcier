@@ -29,12 +29,16 @@ abstract class BaseQueryHandler extends Tonic\Resource {
 		return $this->put();
 	}
 
+	protected function getUid() {
+		return $this->id;
+	}
+
 	/**
 	 * @method PUT
 	 * @provides application/json
 	 */
 	function put() {
-		$uid = $this->id;
+		$uid = $this->getUid();
 		$u = \UserSingleton::getInstance();
 		if ($uid != $u->getId() && !$u->isAdmin())
 			return new Tonic\Response(Tonic\Response::FORBIDDEN);
