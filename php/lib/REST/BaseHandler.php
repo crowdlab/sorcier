@@ -26,7 +26,7 @@ abstract class BaseHandler extends Tonic\Resource {
 		$id = $this->getUid();
 		$u = \UserSingleton::getInstance();
 		if ($id != $u->getId() && !$u->isAdmin()
-			|| !$this->securityCheck(__METHOD__))
+				|| !$this->securityCheck(__METHOD__))
 			return new Tonic\Response(Tonic\Response::FORBIDDEN);
 		list($id, $cid) = $this->getShifted();
 		$cdao = static::getDAO();
@@ -56,13 +56,16 @@ abstract class BaseHandler extends Tonic\Resource {
 			: $_REQUEST;
 		if (!isset($params['id']))
 			$params['id'] = $cid;
-		$r = $cdao->addMod($id, $params);
+		$lang = isset($this->lang)
+			? $this->lang
+			: null;
+		$r = $cdao->addMod($id, $params, $lang);
 		if (!$r || isset($r['error']))
 			return tonicResponse(Tonic\Response::INTERNALSERVERERROR);
 
 		$this->postMod();
 		// return new value
-		$r = $cdao->get($id, $cid);
+		$r = $cdao->get($id, $cid, $lang);
 		return tonicResponse(Tonic\Response::OK, $r);
 	}
 
@@ -75,7 +78,10 @@ abstract class BaseHandler extends Tonic\Resource {
 		$cdao = static::getDAO();
 		if (!$this->securityCheck(__METHOD__))
 			return new Tonic\Response(Tonic\Response::FORBIDDEN);
-		$r = $cdao->get($id, $cid);
+		$lang = isset($this->lang)
+			? $this->lang
+			: null;
+		$r = $cdao->get($id, $cid, $lang);
 		return tonicResponse(Tonic\Response::OK, $r);
 	}
 }

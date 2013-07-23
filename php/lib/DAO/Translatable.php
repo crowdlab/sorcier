@@ -25,6 +25,9 @@ trait Translatable {
 		return $dao->get($row, $entity, $fields, $lang);
 	}
 
+	/**
+	 * Remove all translations for entity
+	 */
 	public function clearTranslations($id) {
 		$dao = \DAO\TranslatableDAO::getInstance();
 		$entity = $this->getName();

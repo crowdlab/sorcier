@@ -67,7 +67,7 @@ class TranslatableDAO extends MongoDAO {
 				unset($row[$k]);
 			}
 		}
-		if (!$row) return;
+		if (!$row) return true;
 		$cond = [static::EID => $row[static::RowId]];
 		$row[static::EntKey]  = $cond[static::EntKey]  = $entity;
 		$row[static::LangKey] = $cond[static::LangKey] = $lang;
