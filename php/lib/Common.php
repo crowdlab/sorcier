@@ -8,7 +8,8 @@ final class Common {
 		'blockquote', 'small', 'a', 'span',
 		'br', 'b', 'i', 'p', 'img',
 		'ol', 'ul', 'li', 'strong',
-		'abbr', 'dt', 'dl', 'dfn', 'em'
+		'abbr', 'dt', 'dl', 'dfn', 'em',
+		'tr', 'td', 'th', 'tbody', 'thead', 'tfoot'
 	];
 
 	/**
