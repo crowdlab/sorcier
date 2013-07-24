@@ -45,11 +45,11 @@ class UploadHandler {
 				// uploaded images. You can also add additional versions with
 				// their own upload directories:
 
-				'large' => array(
-					'upload_dir'   => $config["files"]["path"],
-					'upload_url'   => $config["files"]["url"],
-					'max_width'    => 200,
-					'max_height'   => 200,
+				'large'   => array(
+					'upload_dir'   => $config["files"]["path"] . "200x200_",
+					'upload_url'   => $config["files"]["url"] . "200x200_",
+					'width'    => 200,
+					'height'   => 200,
 					'jpeg_quality' => 95,
 					'png_quality'  => 9
 				),
@@ -57,40 +57,40 @@ class UploadHandler {
 				'128x128' => array(
 					'upload_dir' => $config["files"]["path"] . "128x128_",
 					'upload_url' => $config["files"]["url"] . "128x128_",
-					'max_width'  => 128,
-					'max_height' => 128,
+					'width'  => 128,
+					'height' => 128,
 					'cut'        => true
 				),
 
-				'90x90' => array(
+				'90x90'   => array(
 					'upload_dir' => $config["files"]["path"] . "90x90_",
 					'upload_url' => $config["files"]["url"] . "90x90_",
-					'max_width'  => 90,
-					'max_height' => 90,
+					'width'  => 90,
+					'height' => 90,
 					'cut'        => true
 				),
 
-				'64x64' => array(
+				'64x64'   => array(
 					'upload_dir' => $config["files"]["path"] . "64x64_",
 					'upload_url' => $config["files"]["url"] . "64x64_",
-					'max_width'  => 64,
-					'max_height' => 64,
+					'width'  => 64,
+					'height' => 64,
 					'cut'        => true
 				),
 
-				'40x40' => array(
+				'40x40'   => array(
 					'upload_dir' => $config["files"]["path"] . "40x40_",
 					'upload_url' => $config["files"]["url"] . "40x40_",
-					'max_width'  => 40,
-					'max_height' => 40,
+					'width'  => 40,
+					'height' => 40,
 					'cut'        => true
 				),
 
-				'20x20' => array(
+				'20x20'   => array(
 					'upload_dir' => $config["files"]["path"] . "20x20_",
 					'upload_url' => $config["files"]["url"] . "20x20_",
-					'max_width'  => 20,
-					'max_height' => 20,
+					'width'  => 20,
+					'height' => 20,
 					'cut'        => true
 				)
 			)
@@ -154,42 +154,23 @@ class UploadHandler {
 		)));
 	}
 
-	protected function create_scaled_image($file_name, $options) {
-		$file_path = $this->options['upload_dir'] . $file_name;
-		$new_file_path = $options['upload_dir'] . $file_name;
+	protected function create_scaled_image($size, $options) {
+		$file_path = $this->options['upload_dir'] . $size['hash'];
+		$new_file_path = $options['upload_dir'] . $size['hash'];
 		// Get image attributes
 		$attr = @getimagesize($file_path);
 		list($img_width, $img_height) = $attr;
 		if (!$img_width || !$img_height) {
 			return false;
 		}
+		$scale = $img_width / $size['bw'];
 
-		$scale = min(
-			$options['max_width'] / $img_width,
-			$options['max_height'] / $img_height
-		);
-		// If image smaller
-		if ($scale >= 1) {
-			if ($file_path !== $new_file_path) {
-				return copy($file_path, $new_file_path);
-			}
-			return true;
-		}
+		$new_x = $size['x'] * $scale;
+		$new_y = $size['y'] * $scale;
+		$new_w = $size['w'] * $scale;
 
-		// If neew to be cut
-		if (isset($options['cut']) && $options['cut']) {
-			$new_height = $options['max_height'];
-			$new_width = $options['max_width'];
-			if ($img_width > $img_height)
-				$img_width = $img_height;
-			else
-				$img_height = $img_width;
-		} else {
-			// If need to be resized
-			$new_width = $img_width * $scale;
-			$new_height = $img_height * $scale;
-		}
-		$new_img = imagecreatetruecolor($new_width, $new_height);
+		$new_width = $options['width'];
+		$new_img = imagecreatetruecolor($new_width, $new_width);
 
 		// Get image type
 		$type = strtolower(substr(strrchr($attr['mime'], '/'), 1));
@@ -230,11 +211,11 @@ class UploadHandler {
 		$success = $src_img && imagecopyresampled(
 			$new_img,
 			$src_img,
-			0, 0, 0, 0,
+			0, 0, $new_x, $new_y,
 			$new_width,
-			$new_height,
-			$img_width,
-			$img_height
+			$new_width,
+			$new_w,
+			$new_w
 		) && $write_image($new_img, $new_file_path, $image_quality);
 		// Free up memory (imagedestroy does not delete files):
 		imagedestroy($src_img);
@@ -354,6 +335,22 @@ class UploadHandler {
 		return $name;
 	}
 
+	/*
+	 * Crop image
+	 * @param $size - {x: offset by x,
+	 *                 y: offset by y,
+	 *                 w: cropping area's size in client scale,
+	 *                 bw: image width in client scale}
+	 */
+	public function crop($size) {
+		foreach ($this->options['image_versions'] as $version => $options) {
+			if ($this->create_scaled_image($size, $options)) {
+				\logger\Log::instance()->logInfo('Crop file:', [$size['hash'], $version]);
+			}
+		}
+		return true;
+	}
+
 	/**
 	 * Обработка загружаемого файла
 	 * @param $uploaded_file - путь к временному файлу
@@ -373,7 +370,8 @@ class UploadHandler {
 		if ($set_author_id)
 			$file->author_id = \UserSingleton::getInstance()->getId(false);
 		$file->size = intval($size);
-		$file->public = isset($_REQUEST['public']) && $_REQUEST['public'] == 0 ? 0 : 1;
+		$file->public = isset($_REQUEST['public']) && $_REQUEST['public'] == 0 ?
+			0 : 1;
 
 		\logger\Log::instance()->logInfo('Parse file:', $file);
 		if ($this->validate($uploaded_file, $file, $error, $index)) {
@@ -381,7 +379,8 @@ class UploadHandler {
 			if (isset($hash) && !is_file($this->options['upload_dir'] . $hash))
 				\Common::die500("Error while uploading file's chunk. First part of file doesn't exist.");
 			else
-				$file->hash = isset($hash) ? $hash : $this->getHashName($file->type);
+				$file->hash = isset($hash) ? $hash :
+					$this->getHashName($file->type);
 
 			$file_path = $this->options['upload_dir'] . $file->hash;
 			\logger\Log::instance()->logDebug($file_path);
@@ -415,9 +414,11 @@ class UploadHandler {
 				// URL для доступа к файлу
 				$file->url = $this->getURL(rawurlencode($file->hash));
 				// Для картинок.
-				if (isset($_SERVER['HTTP_X_FILE_AVATAR']))
+				if (isset($_SERVER['HTTP_X_FILE_AVATAR']) && false)
 					foreach ($this->options['image_versions'] as $version => $options) {
-						if ($this->create_scaled_image($file->hash, $options)) {
+						if ($this->create_scaled_image($file->hash,
+							$options)
+						) {
 							if ($this->options['upload_dir'] !== $options['upload_dir']) {
 								$file->{$version . '_url'} = $options['upload_url']
 									. rawurlencode($file->hash);
@@ -466,11 +467,14 @@ class UploadHandler {
 				$info[] = $this->handle_file_upload(
 					$upload['tmp_name'][$index],
 					isset($_SERVER['HTTP_X_FILE_NAME']) ?
-						$_SERVER['HTTP_X_FILE_NAME'] : $upload['name'][$index],
+						$_SERVER['HTTP_X_FILE_NAME'] :
+						$upload['name'][$index],
 					isset($_SERVER['HTTP_X_FILE_SIZE']) ?
-						$_SERVER['HTTP_X_FILE_SIZE'] : $upload['size'][$index],
+						$_SERVER['HTTP_X_FILE_SIZE'] :
+						$upload['size'][$index],
 					isset($_SERVER['HTTP_X_FILE_TYPE']) ?
-						$_SERVER['HTTP_X_FILE_TYPE'] : $upload['type'][$index],
+						$_SERVER['HTTP_X_FILE_TYPE'] :
+						$upload['type'][$index],
 					isset($_SERVER['HTTP_X_FILE_HASH_NAME']) ?
 						$_SERVER['HTTP_X_FILE_HASH_NAME'] : null,
 					$upload['error'][$index],
