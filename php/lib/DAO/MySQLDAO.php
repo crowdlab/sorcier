@@ -389,6 +389,7 @@ abstract class MySQLDAO implements IDAO {
 			'schema'   => [],
 			'special'  => null,
 			'throw'    => true,
+			'clear_tr' => false
 		];
 		$params = array_append($params, $params_default);
 		foreach ($params as $k => $v)
@@ -436,7 +437,7 @@ abstract class MySQLDAO implements IDAO {
 			if ($diff)
 				$res['diff'] = array_diff_values($item, $prev);
 		}
-		if (isset(static::$translationFields))
+		if (isset(static::$translationFields) && $clear_tr)
 			$this->clearTranslations($id);
 		return $res;
 	}
