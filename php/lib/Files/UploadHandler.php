@@ -45,11 +45,11 @@ class UploadHandler {
 				// uploaded images. You can also add additional versions with
 				// their own upload directories:
 
-				'large'   => array(
-					'upload_dir'   => $config["files"]["path"] . "200x200_",
-					'upload_url'   => $config["files"]["url"] . "200x200_",
-					'width'    => 200,
-					'height'   => 200,
+				'100x100'   => array(
+					'upload_dir'   => $config["files"]["path"] . "100x100_",
+					'upload_url'   => $config["files"]["url"] . "100x100_",
+					'width'    => 100,
+					'height'   => 100,
 					'jpeg_quality' => 95,
 					'png_quality'  => 9
 				),
