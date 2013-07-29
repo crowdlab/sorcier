@@ -341,15 +341,17 @@ abstract class MySQLDAO implements IDAO {
 	 * @param $request  запрос на модификацию
 	 * @param $allowed  разрешенные поля
 	 * @param $callback обработчик
+	 * @param $id id сущности
 	 */
-	protected static function getFields($request, $allowed = null, $callback = null) {
+	protected static function getFields($request, $allowed = null,
+			$callback = null, $id = null) {
 		$fields = [];
 		if (empty($allowed))
 			$allowed = (isset(static::$allowed)) ? static::$allowed : [];
 		foreach ($request as $k => $v) {
 			if (!in_array($k, $allowed, true)) continue;
 			if (isset(static::$checkers[$k]) &&
-					!call_user_func(static::$checkers[$k], $v))
+					!call_user_func(static::$checkers[$k], $v, $id))
 				continue;
 			if ($callback && is_callable($callback))
 				$v = $callback([$k => $v]);
@@ -398,7 +400,7 @@ abstract class MySQLDAO implements IDAO {
 		if (!is_array($request)) list($request, $id) = array($id, $request);
 		// filter fields
 		if (!is_array($request)) return null; // error
-		$fields = static::getFields($request, $allowed, $callback);
+		$fields = static::getFields($request, $allowed, $callback, $id);
 		if ($special && !$special($fields))
 			return ['error' => \Common::InternalError, 'code' => 403];
 		$new_extra = static::filterExtra($request);
