@@ -54,6 +54,10 @@ trait Enforcer {
 				case 'bool':
 					$v = $v && $v !== 'false' ? 1 : 0;
 					break;
+				case 'datenull':
+					if ($v === null || $v == 'null')
+						$v = null;
+					break;
 				case 'int':
 					$v = intval($v);
 					break;
