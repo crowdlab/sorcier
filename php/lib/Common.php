@@ -96,6 +96,14 @@ final class Common {
 		return self::strip_tags_smart($s, $allowed_tags);
 	}
 
+	public static function chpuPreprocess($kv) {
+		if (isset($kv['chpu'])) {
+			$kv['chpu'] = str_replace(' ', '-', $kv['chpu']);
+			$kv['chpu'] = str_replace('_', '-', $kv['chpu']);
+		}
+		foreach($kv as $v) return $v;
+	}
+
 	/**
 	 * Строка имеет префикс
 	 *
