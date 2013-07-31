@@ -323,8 +323,10 @@ abstract class MongoDAO implements IDAO {
 
 	/** получить из строкового id mongo'вский */
 	public static function make_id($id) {
-		if (!is_object($id))
+		if (is_object($id)) return $id;
+		if (\Common::is_valid_mongoId($id))
 			return new \MongoId($id);
+		return null;
 	}
 
 	/** получить MongoDate из разных форматов (число/строка/MongoDate) */

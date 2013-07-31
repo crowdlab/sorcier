@@ -513,8 +513,12 @@ final class Common {
 		$regex = '/^[0-9a-z]{24}$/';
 		if (!class_exists('MongoId'))
 			return preg_match($regex, $id);
-		$tmp = new \MongoId($id);
-		return ($tmp->{'$id'} == $id);
+		try {
+			$tmp = new \MongoId($id);
+			return ($tmp->{'$id'} == $id);
+		} catch (\Exception $e) {
+			return false;
+		}
 	}
 
 	/**
