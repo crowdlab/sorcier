@@ -61,6 +61,9 @@ trait Enforcer {
 				case 'int':
 					$v = intval($v);
 					break;
+				case 'array':
+					if (!$v) $v = [];
+					break;
 				case 'intnull':
 					if ($v !== null)
 						$v = intval($v);

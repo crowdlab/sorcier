@@ -61,7 +61,7 @@ abstract class BaseHandler extends Tonic\Resource {
 			: null;
 		$r = $cdao->addMod($id, $params, $lang);
 		if (!$r || isset($r['error']))
-			return tonicResponse(Tonic\Response::INTERNALSERVERERROR);
+			return tonicResponse(Tonic\Response::INTERNALSERVERERROR, $r);
 
 		$this->postMod();
 		// return new value
