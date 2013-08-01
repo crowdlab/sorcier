@@ -10,19 +10,25 @@ use DAO;
  */
 trait SubcollectionMongo {
 	/**
-	 * Get subcollection items
-	 *
-	 * Do not use this if you fetch whole item
+	 * Get subcollection item(s)
+	 * @param $uid parent id
+	 * @param $id item id
+	 * @param $lang language (not used)
+	 * @param $idkey id key
 	 */
-	public function get($uid) {
+	public function get($uid, $id = null, $lang = null, $idkey = '_id') {
 		$dao = static::getParentDAO();
 		$name = $this->getName();
 		$cond = [static::$parent_key => static::make_id($uid)];
+		if ($id)
+			$cond[$idkey] = ($idkey == '_id') ? static::make_id($id) : $id;
 		$r = $dao->select([$name], $cond);
 		$ret = $dao->fetch_assoc($r);
+		if ((!$ret || !isset($ret[$name]) || !isset($ret[$name][0])) && $id)
+			return ['error' => 'not found', 'code' => 404];
 		if (!isset($ret[$name]) || !count($ret[$name]))
 			return [];
-		return $ret[$name];
+		return $id ? $ret[$name][0] : $ret[$name];
 	}
 
 	/**
