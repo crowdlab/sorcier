@@ -112,6 +112,14 @@ class MySQLOperator {
 	}
 
 	/**
+	 * добавить поля
+	 */
+	public function add_fields($fields) {
+		$this->fields = array_merge($this->fields, $fields);
+		return $this;
+	}
+
+	/**
 	 * основная таблица вставки
 	 */
 	public function into($from) {
