@@ -22,27 +22,29 @@ trait Helpers {
 	 * TODO (vissi): медленно, лучше не использовать для большого количества записей
 	 */
 	public function enrichAll($r, $with = null) {
-		$cond = [static::IdKey => ['$in' => static::getIds($r)]];
-		$op = $this->select_fn([static::IdKey], $cond);
 		if ($with == null)
 			$with = [];
-		foreach($with as $k => $it) {
-			$meth = "enrichAll_$it";
-			if (method_exists($this, $meth)) {
-				unset($with[$k]);
-				$op = $this->$meth($op);
-			}
-		}
 		$kv = [];
-		$ret = $this->fetch_all($op, function($item) use (&$kv) {
-			if (!isset($item[static::IdKey]))
+		if (method_exists($this, 'select_fn')) {
+			$cond = [static::IdKey => ['$in' => static::getIds($r)]];
+			$op = $this->select_fn([static::IdKey], $cond);
+			foreach($with as $k => $it) {
+				$meth = "enrichAll_$it";
+				if (method_exists($this, $meth)) {
+					unset($with[$k]);
+					$op = $this->$meth($op);
+				}
+			}
+			$ret = $this->fetch_all($op, function($item) use (&$kv) {
+				if (!isset($item[static::IdKey]))
+					return $item;
+				$id = $item[static::IdKey];
+				unset($item[static::IdKey]);
+				$kv[$id] = $item;
 				return $item;
-			$id = $item[static::IdKey];
-			unset($item[static::IdKey]);
-			$kv[$id] = $item;
-			return $item;
-		});
-		if (!count($with)) return $r;
+			});
+			if (!count($with)) return $r;
+		}
 		foreach($r as $k => &$v) {
 			if (isset($r[static::IdKey]) && isset($kv[$r[static::IdKey]]))
 				$v = array_merge($v, $kv[$r[static::IdKey]]);
