@@ -24,6 +24,8 @@ trait Helpers {
 	public function enrichAll($r, $with = null) {
 		$cond = [static::IdKey => ['$in' => static::getIds($r)]];
 		$op = $this->select_fn([static::IdKey], $cond);
+		if ($with == null)
+			$with = [];
 		foreach($with as $k => $it) {
 			$meth = "enrichAll_$it";
 			if (method_exists($this, $meth)) {
@@ -40,6 +42,7 @@ trait Helpers {
 			$kv[$id] = $item;
 			return $item;
 		});
+		if (!count($with)) return $r;
 		foreach($r as $k => &$v) {
 			if (isset($r[static::IdKey]) && isset($kv[$r[static::IdKey]]))
 				$v = array_merge($v, $kv[$r[static::IdKey]]);
