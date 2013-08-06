@@ -358,6 +358,20 @@ final class Common {
 		return $s;
 	}
 
+	public static function reindexArrayBy($items, $kk) {
+		$kv = [];
+		if (!is_array($items)) return $kv;
+		foreach ($items as $k => $v) {
+			if (!isset($v[$kk]))
+				continue;
+			$v[$kk] = (int) $v[$kk];
+			if (!isset($kv[$v[$kk]]))
+				$kv[$v[$kk]] = [];
+			$kv[$v[$kk]] []= $v;
+		}
+		return $kv;
+	}
+
 	/**
 	 * Сделать ссылки из адресов
 	 */

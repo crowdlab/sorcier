@@ -23,6 +23,14 @@ trait CollectionTrait {
 	}
 
 	/**
+	 * convert flat array to id-indexed array
+	 */
+	public static function arrayToKV($items) {
+		$kk = static::$parent_key;
+		return \Common::reindexArrayBy($items, $kk);
+	}
+
+	/**
 	 * enrich collection of parent entity type items
 	 * with subcollections of current DAO type
 	 */
@@ -34,15 +42,7 @@ trait CollectionTrait {
 		else
 			$ids = static::getIds($r);
 		$items = $this->get($ids);
-		$kv = [];
-		foreach ($items as $k => $v) {
-			if (!isset($v[static::$parent_key]))
-				continue;
-			$v[static::$parent_key] = (int) $v[static::$parent_key];
-			if (!isset($kv[$v[static::$parent_key]]))
-				$kv[$v[static::$parent_key]] = [];
-			$kv[$v[static::$parent_key]] []= $v;
-		}
+		$kv = static::arrayToKV($items);
 		foreach($r as $k => &$v) {
 			$v[$idkey] = (int) $v[$idkey];
 			if (isset($v[$idkey]) && isset($kv[$v[$idkey]])) {
