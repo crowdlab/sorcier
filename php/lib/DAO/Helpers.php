@@ -19,15 +19,21 @@ trait Helpers {
 
 	/**
 	 * Дополнить массив записей доп данными
-	 * TODO (vissi): медленно, лучше не использовать для большого количества записей
+	 * @param $r записи
+	 * @param $with поля дополнения
 	 */
-	public function enrichAll($r, $with = null) {
+	public function enrichAll($r, $with = null, $idkey = null) {
 		if ($with == null)
 			$with = [];
 		$kv = [];
 		if (method_exists($this, 'select_fn')) {
-			$cond = [static::IdKey => ['$in' => static::getIds($r)]];
-			$op = $this->select_fn([static::IdKey], $cond);
+			$ids = static::getIds($r);
+			$cond = [static::IdKey => ['$in' => $ids]];
+			$is_operator = is_object($r) && $r instanceof MySQLOperator;
+			if ($is_operator)
+				$op = &$r;
+			else
+				$op = $this->select_fn([static::IdKey], $cond);
 			foreach($with as $k => $it) {
 				$meth = "enrichAll_$it";
 				if (method_exists($this, $meth)) {
@@ -35,15 +41,24 @@ trait Helpers {
 					$op = $this->$meth($op);
 				}
 			}
-			$ret = $this->fetch_all($op, function($item) use (&$kv) {
-				if (!isset($item[static::IdKey]))
+			if (!$is_operator) {
+				$ret = $this->fetch_all($op, function($item) use (&$kv) {
+					if (!isset($item[static::IdKey]))
+						return $item;
+					$id = $item[static::IdKey];
+					unset($item[static::IdKey]);
+					$kv[$id] = $item;
 					return $item;
-				$id = $item[static::IdKey];
-				unset($item[static::IdKey]);
-				$kv[$id] = $item;
-				return $item;
-			});
+				});
+			}
 			if (!count($with)) return $r;
+		}
+		foreach($with as $k => $it) {
+			$meth = "enrichColl_$it";
+			if (method_exists($this, $meth)) {
+				unset($with[$k]);
+				$r = $this->$meth($r);
+			}
 		}
 		foreach($r as $k => &$v) {
 			if (isset($r[static::IdKey]) && isset($kv[$r[static::IdKey]]))

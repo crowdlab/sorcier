@@ -504,7 +504,8 @@ abstract class MySQLDAO implements IDAO {
 			: $r->fetch_assoc();
 		if (is_callable($schema))
 			$func = $schema;
-		if ($schema === null && isset(static::$schema))
+		if (($schema === null || is_callable($schema))
+				&& isset(static::$schema))
 			$schema = static::$schema;
 		if (is_array($schema) && is_array($row))
 			$row = self::enforce($schema, $row);
@@ -526,7 +527,8 @@ abstract class MySQLDAO implements IDAO {
 		$has_limit = $limit != null;
 		if (is_callable($schema))
 			$func = $schema;
-		if ($schema === null && isset(static::$schema))
+		if (($schema === null || is_callable($schema))
+				&& isset(static::$schema))
 			$schema = static::$schema;
 		while ($row = ($r instanceof \mysqli_result
 				? mysqli_fetch_assoc($r)

@@ -6,6 +6,7 @@ use DAO;
  * This trait may be used to extend DAO w/ collection-like mod capability
  *
  * Please set static::$parent_key for correct operation
+ * Requires Helpers trait
  */
 trait CollectionTrait {
 	/**
@@ -19,6 +20,36 @@ trait CollectionTrait {
 		$r = $this->push($value, true);
 		if ($r) return $this->insert_id();
 		return ['error' => 'could not add'];
+	}
+
+	/**
+	 * enrich collection of parent entity type items
+	 * with subcollections of current DAO type
+	 */
+	public function enrichCollection($r, $key = null, $idkey = 'id') {
+		if ($key == null)
+			$key = $this->getName();
+		if (isset(static::$container))
+			$ids = call_user_func(static::$container.'::getIds', $r);
+		else
+			$ids = static::getIds($r);
+		$items = $this->get($ids);
+		$kv = [];
+		foreach ($items as $k => $v) {
+			if (!isset($v[static::$parent_key]))
+				continue;
+			$v[static::$parent_key] = (int) $v[static::$parent_key];
+			if (!isset($kv[$v[static::$parent_key]]))
+				$kv[$v[static::$parent_key]] = [];
+			$kv[$v[static::$parent_key]] []= $v;
+		}
+		foreach($r as $k => &$v) {
+			$v[$idkey] = (int) $v[$idkey];
+			if (isset($v[$idkey]) && isset($kv[$v[$idkey]])) {
+				$v[$key] = $kv[$v[$idkey]];
+			}
+		}
+		return $r;
 	}
 
 	/**
