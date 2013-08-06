@@ -91,7 +91,7 @@ function getOptional($name, $default = null, &$rqst = null) {
  */
 function array_append($array1, $array2) {
 	$diff = array_diff_key($array2, $array1);
-	return array_merge($array1, $diff);
+	return $array1 + $diff;
 }
 
 /**

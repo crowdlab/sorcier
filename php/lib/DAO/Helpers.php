@@ -34,24 +34,26 @@ trait Helpers {
 				$op = &$r;
 			else
 				$op = $this->select_fn([static::IdKey], $cond);
+			$run_q = false;
 			foreach($with as $k => $it) {
 				$meth = "enrichAll_$it";
 				if (method_exists($this, $meth)) {
 					unset($with[$k]);
 					$op = $this->$meth($op);
+					$run_q = true;
 				}
 			}
-			if (!$is_operator) {
+			if (!$is_operator && $run_q) {
 				$ret = $this->fetch_all($op, function($item) use (&$kv) {
 					if (!isset($item[static::IdKey]))
 						return $item;
-					$id = $item[static::IdKey];
-					unset($item[static::IdKey]);
+					$id = (int) $item[static::IdKey];
 					$kv[$id] = $item;
 					return $item;
 				});
 			}
-			if (!count($with)) return $r;
+			if ($is_operator)
+				return $r;
 		}
 		foreach($with as $k => $it) {
 			$meth = "enrichColl_$it";
@@ -60,10 +62,11 @@ trait Helpers {
 				$r = $this->$meth($r);
 			}
 		}
-		foreach($r as $k => &$v) {
-			if (isset($r[static::IdKey]) && isset($kv[$r[static::IdKey]]))
-				$v = array_merge($v, $kv[$r[static::IdKey]]);
-			$r[$k] = $this->enrich($v, $with);
+		foreach($r as &$v) {
+			if (isset($v[static::IdKey]) && isset($kv[$v[static::IdKey]]))
+				$v += $kv[$v[static::IdKey]];
+			if (count($with))
+				$v =$this->enrich($v, $with);
 		}
 		return $r;
 	}
