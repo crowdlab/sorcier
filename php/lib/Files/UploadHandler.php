@@ -58,40 +58,35 @@ class UploadHandler {
 					'upload_dir' => $config["files"]["path"] . "128x128_",
 					'upload_url' => $config["files"]["url"] . "128x128_",
 					'width'  => 128,
-					'height' => 128,
-					'cut'        => true
+					'height' => 128
 				),
 
 				'90x90'   => array(
 					'upload_dir' => $config["files"]["path"] . "90x90_",
 					'upload_url' => $config["files"]["url"] . "90x90_",
 					'width'  => 90,
-					'height' => 90,
-					'cut'        => true
+					'height' => 90
 				),
 
 				'64x64'   => array(
 					'upload_dir' => $config["files"]["path"] . "64x64_",
 					'upload_url' => $config["files"]["url"] . "64x64_",
 					'width'  => 64,
-					'height' => 64,
-					'cut'        => true
+					'height' => 64
 				),
 
 				'40x40'   => array(
 					'upload_dir' => $config["files"]["path"] . "40x40_",
 					'upload_url' => $config["files"]["url"] . "40x40_",
 					'width'  => 40,
-					'height' => 40,
-					'cut'        => true
+					'height' => 40
 				),
 
 				'20x20'   => array(
 					'upload_dir' => $config["files"]["path"] . "20x20_",
 					'upload_url' => $config["files"]["url"] . "20x20_",
 					'width'  => 20,
-					'height' => 20,
-					'cut'        => true
+					'height' => 20
 				)
 			)
 		];
@@ -223,7 +218,7 @@ class UploadHandler {
 		return $success;
 	}
 
-	protected function validate($uploaded_file, $file, $error, $index) {
+	protected function validate($uploaded_file, $file, $error) {
 		if ($error) {
 			$file->error = $error;
 			return false;
@@ -299,7 +294,7 @@ class UploadHandler {
 	 *  into different directories or replacing hidden system files.
 	 *    Also remove control characters and spaces (\x00..\x20) around the filename:
 	 */
-	protected function trim_file_name($name, $type, $index) {
+	protected function trim_file_name($name, $type) {
 
 		$file_name = trim(basename(stripslashes($name)), ".\x00..\x20");
 		// Add missing file extension for known image types:
@@ -358,35 +353,42 @@ class UploadHandler {
 	 * @param $hash          - hash имя файла, если он передается частями
 	 */
 	protected function handle_file_upload($uploaded_file, $name, $size, $type,
-		$hash, $error, $index = null, $set_author_id = false) {
+		$hash, $error, $index = null) {
+
 		\logger\Log::instance()->logInfo('Start uploading file:', $name);
+
 		$file = new \stdClass();
 		$file->type = pathinfo($name, PATHINFO_EXTENSION);
-		$file->name = $this->trim_file_name($name, $type, $index);
+		$file->name = $this->trim_file_name($name, $type);
 		if (isset($_REQUEST['avatar'])) {
 			$file->name = self::renameGif($file->name);
 		}
 		$file->hash = $hash;
-		if ($set_author_id)
-			$file->author_id = \UserSingleton::getInstance()->getId(false);
+		$file->author_id = \UserSingleton::getInstance()->getId(false);
 		$file->size = intval($size);
-		$file->public = isset($_REQUEST['public']) && $_REQUEST['public'] == 0 ?
-			0 : 1;
+		$file->public = isset($_REQUEST['public']) && $_REQUEST['public'] == 1 ?
+			1 : 0;
 
 		\logger\Log::instance()->logInfo('Parse file:', $file);
-		if ($this->validate($uploaded_file, $file, $error, $index)) {
+
+		if ($this->validate($uploaded_file, $file, $error)) {
 			// Проверяем, что $hash был сформирован на сервере
 			if (isset($hash) && !is_file($this->options['upload_dir'] . $hash))
 				\Common::die500("Error while uploading file's chunk. First part of file doesn't exist.");
 			else
-				$file->hash = isset($hash) ? $hash :
-					$this->getHashName($file->type);
+				$file->hash = isset($hash)
+					? $hash
+					: $this->getHashName($file->type);
 
 			$file_path = $this->options['upload_dir'] . $file->hash;
+
 			\logger\Log::instance()->logDebug($file_path);
-			$append_file = !$this->options['discard_aborted_uploads'] &&
-				is_file($file_path) && $file->size > filesize($file_path);
+
+			$append_file = !$this->options['discard_aborted_uploads']
+				&& is_file($file_path)
+				&& $file->size > filesize($file_path);
 			clearstatcache();
+
 			if ($uploaded_file && is_uploaded_file($uploaded_file)) {
 				// multipart/formdata uploads (POST method uploads)
 				if ($append_file) {
@@ -406,6 +408,7 @@ class UploadHandler {
 					$append_file ? FILE_APPEND : 0
 				);
 			}
+
 			$file_size = filesize($file_path);
 			if ($file_size === $file->size) {
 				// Регистрируем файл
@@ -453,17 +456,38 @@ class UploadHandler {
 	/**
 	 *  Обработать POST запрос с файлом
 	 */
-	public function post($set_author_id = false) {
+	public function post() {
 		if (isset($_REQUEST['_method']) && $_REQUEST['_method'] === 'DELETE') {
 			return $this->delete();
 		}
-		$upload = isset($_FILES[$this->options['param_name']]) ?
-			$_FILES[$this->options['param_name']] : null;
+
+		// if request from redactor
+		if (isset($_FILES['file']) && is_array($_FILES['file'])) {
+			$file = $_FILES['file'];
+			$info = $this->handle_file_upload(
+				$file['tmp_name'],
+				$file['name'],
+				$file['size'],
+				$file['type'],
+				null,
+				[],
+				null
+			);
+			echo stripslashes(json_encode([
+				'filelink' => $info->url,
+				'filename' => $info->name]));
+			die();
+		}
+
+		$upload = isset($_FILES[$this->options['param_name']])
+			? $_FILES[$this->options['param_name']]
+			:null;
 		$info = array();
 		if ($upload && is_array($upload['tmp_name'])) {
 			// param_name is an array identifier like "files[]",
 			// $_FILES is a multi-dimensional array:
 			foreach ($upload['tmp_name'] as $index => $value) {
+
 				$info[] = $this->handle_file_upload(
 					$upload['tmp_name'][$index],
 					isset($_SERVER['HTTP_X_FILE_NAME']) ?
@@ -478,8 +502,7 @@ class UploadHandler {
 					isset($_SERVER['HTTP_X_FILE_HASH_NAME']) ?
 						$_SERVER['HTTP_X_FILE_HASH_NAME'] : null,
 					$upload['error'][$index],
-					$index,
-					$set_author_id
+					$index
 				);
 			}
 		} elseif ($upload || isset($_SERVER['HTTP_X_FILE_NAME'])) {
@@ -499,26 +522,11 @@ class UploadHandler {
 				isset($_SERVER['HTTP_X_FILE_HASH_NAME']) ?
 					$_SERVER['HTTP_X_FILE_HASH_NAME'] : uniqid("file_"),
 				isset($upload['error']) ? $upload['error'] : null,
-				null,
-				$set_author_id
+				null
 			);
 		}
 		header('Vary: Accept');
-		$json = json_encode($info);
-		$redirect = isset($_REQUEST['redirect']) ?
-			stripslashes($_REQUEST['redirect']) : null;
-		if ($redirect) {
-			header('Location: ' . sprintf($redirect, rawurlencode($json)));
-			return;
-		}
-		if (isset($_SERVER['HTTP_ACCEPT']) &&
-			(strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)
-		) {
-			header('Content-type: application/json');
-		} else {
-			header('Content-type: text/plain');
-		}
-		echo $json;
+		\Common::finish($info);
 	}
 
 	public function delete() {
