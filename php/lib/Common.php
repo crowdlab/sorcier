@@ -386,6 +386,8 @@ final class Common {
 	 * @param $allowed_tags допустимые теги
 	 * @param $replace_br   заменять переводы строк
 	 * @return mixed
+	 *
+	 * TODO (vissi): проверить нужно ли использовать функцию там где это делается сейчас
 	 */
 	public static function prepare_message($text, $allowed_tags = null, $replace_br = false) {
 		if (!isset($allowed_tags))
