@@ -6,13 +6,27 @@ use DAO;
  * MySQL selection results iterator
  */
 class DAOIterator implements \Iterator {
+	/** результат запроса */
 	protected $result;
+	/** текущая запись */
 	protected $row;
+	/** текущая позиция */
 	protected $pos;
+	/** объект-модификатор (для сопряжения источников данных) */
+	protected $helper;
+	/** объект доступа к данным (для схемы) */
+	protected $dao;
 
-	public function __construct($result) {
+	/**
+	 * Построить итератор
+	 */
+	public function __construct($result, $dao = null, $helper = null) {
 		$this->result = $result;
 		$this->pos = 0;
+		if ($helper)
+			$this->helper = $helper;
+		if ($dao)
+			$this->dao = $dao;
 	}
 
 	public function num_rows() {
@@ -20,16 +34,46 @@ class DAOIterator implements \Iterator {
 		return mysqli_num_rows($this->result);
 	}
 
-	public function fetch_all($schema = []) {
+	public function fetch_all($schema = null, $func = null) {
 		$r = [];
-		while($row = mysqli_fetch_assoc($this->result)) {
-			$r[]= \DAO\MySQLDAO::enforce($schema, $row);
+		if (is_callable($schema) && $func == null) {
+			$func = $schema;
+			$schema = null;
 		}
+		if ($schema === null)
+			if ($this->dao && isset($this->dao->schema))
+				$schema = $this->dao->schema;
+			else
+				$schema = [];
+		while($row = mysqli_fetch_assoc($this->result)) {
+			$row = \DAO\MySQLDAO::enforce($schema, $row);
+			$r[]= $row;
+		}
+		if ($this->helper)
+			$r = $this->helper->enrichAll($r);
+		if ($func)
+			foreach($r as &$row)
+				$row = call_user_func($func, $row);
 		return $r;
 	}
 
-	public function fetch_assoc($schema = []) {
-		return \DAO\MySQLDAO::enforce($schema, mysqli_fetch_assoc($this->result));
+	public function fetch_assoc($schema = null, $func = null) {
+		if (is_callable($schema) && $func == null) {
+			$func = $schema;
+			$schema = null;
+		}
+		if ($schema === null)
+			if ($this->dao && isset($this->dao->schema))
+				$schema = $this->dao->schema;
+			else
+				$schema = [];
+		$r = \DAO\MySQLDAO::enforce($schema, mysqli_fetch_assoc($this->result));
+		if ($r && $this->helper)
+			$r = $this->helper->enrich($r);
+		if ($func)
+			foreach($r as &$row)
+				$row = call_user_func($func, $row);
+		return $r;
 	}
 
 	public function current() {

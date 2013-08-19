@@ -10,6 +10,8 @@ class Join {
 	protected $q;
 	/** join predicate */
 	protected $predicate = true;
+	protected $operators = [];
+	const LEFT = "LEFT";
 
 	/**
 	 * Предикат
@@ -40,7 +42,12 @@ class Join {
 			$this->predicate = true;
 			return $this;
 		}
-		$this->q .= (string) self::imbue($table_name, $cond, "LEFT");
+		$this->operators []= [
+			'table'  => $table_name,
+			'on'     => $cond,
+			'prefix' => static::LEFT
+		];
+		$this->q .= (string) self::imbue($table_name, $cond, static::LEFT);
 		return $this;
 	}
 
@@ -55,8 +62,24 @@ class Join {
 			$this->predicate = true;
 			return $this;
 		}
+		$this->operators []= [
+			'table'  => $table_name,
+			'on'     => $cond,
+			'prefix' => $prefix
+		];
 		$this->q .= (string) self::imbue($table_name, $cond, $prefix);
 		return $this;
+	}
+
+	/**
+	 * return joins as array (for MySQLOperator)
+	 */
+	public function get() {
+		foreach ($this->operators as &$v) {
+			if (is_array($v['on']))
+				$v['on'] = \DAO\QueryGen::make_cond($v['on'], true, '', true);
+		}
+		return $this->operators;
 	}
 
 	/**
@@ -66,10 +89,15 @@ class Join {
 	 * @param $prefix префикс (left, right, inner, ...)
 	 */
 	public function __construct($table_name = null, $cond = null, $prefix = '') {
-		if (!empty($table_name))
+		if (!empty($table_name)) {
 			$this->q = " $prefix JOIN $table_name ON " .
 				\DAO\QueryGen::make_cond($cond, true, '', true); // noescape on
-		else $this->q = ''; // empty join
+			$this->operators []= [
+				'table'  => $table_name,
+				'on'     => $cond,
+				'prefix' => $prefix
+			];
+		} else $this->q = ''; // empty join
 	}
 
 	public function __toString() {

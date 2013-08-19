@@ -54,7 +54,7 @@ class QueryGen {
 	public static function make_fields($set) {
 		if (is_array($set) && count($set) == 0) return '1';
 		if (!is_array($set)) $set = [$set];
-		$set_kv = array();
+		$set_kv = [];
 		foreach ($set as $k => $v) {
 			$set_kv []= is_object($v) ? (string) $v : self::make_key($v);
 		}

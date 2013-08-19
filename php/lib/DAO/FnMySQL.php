@@ -1,6 +1,7 @@
 <?php
 namespace DAO;
 use DAO;
+use DAO\QueryClass as QC;
 /**
  * Functional MySQL DAO
  * if you want to interact with MySQL functional way, please use this
@@ -66,7 +67,7 @@ class FnMySQL {
 	 * @param $condition условие
 	 */
 	public static function select($fields = [], $condition = []) {
-		$r = new DAO\MySQLOperator("select", $fields, $condition);
+		$r = new DAO\MySQLOperator(QC::select, $fields, $condition);
 		return self::setFrom($r);
 	}
 
@@ -76,7 +77,7 @@ class FnMySQL {
 	 * @param $cond условие
 	 */
 	public static function update($set = [], $cond = []) {
-		$r = new DAO\MySQLOperator("update", $set, $cond);
+		$r = new DAO\MySQLOperator(QC::update, $set, $cond);
 		return self::setFrom($r);
 	}
 
@@ -93,7 +94,7 @@ class FnMySQL {
 	 * @param $value кортеж (массив ключ-значение)
 	 */
 	public static function insert($value = null, $ignore = false, $suffix = '') {
-		$r = new DAO\MySQLOperator("insert", $value, $ignore, $suffix);
+		$r = new DAO\MySQLOperator(QC::insert, $value, $ignore, $suffix);
 		return self::setFrom($r);
 	}
 
@@ -102,7 +103,7 @@ class FnMySQL {
 	 * @param $cond условие
 	 */
 	public static function delete($cond = []) {
-		$r = new DAO\MySQLOperator("delete", $cond);
+		$r = new DAO\MySQLOperator(QC::delete, $cond);
 		return self::setFrom($r);
 	}
 
@@ -112,7 +113,8 @@ class FnMySQL {
 	 * @param $condition условие
 	 */
 	public static function count($field, $condition = []) {
-		$r = new DAO\MySQLOperator("count", $field, $condition);
+		$fields = [DAO\Sql\Expr("COUNT($field)")];
+		$r = new DAO\MySQLOperator(QC::select, $fields, $condition);
 		return self::setFrom($r);
 	}
 }

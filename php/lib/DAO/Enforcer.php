@@ -25,7 +25,7 @@ trait Enforcer {
 	 * @param $optional optional fields (not returned if null)
 	 */
 	public static function enforce($schema, $row, $optional = []) {
-		if (empty($schema) || empty($row)) return $row;
+		if (empty($schema) || empty($row) || !is_array($schema)) return $row;
 		$unsetf = [];
 		foreach ($row as $k => $v) {
 			if (in_array($k, $optional, true)

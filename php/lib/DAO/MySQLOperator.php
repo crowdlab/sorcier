@@ -1,10 +1,13 @@
 <?php
 namespace DAO;
 use DAO;
+use DAO\QueryClass as QC;
 /**
  * Functional MySQL Operator
  */
 class MySQLOperator {
+	use DAO\Operator\Traits\Mongo;
+
 	/** класс запроса */
 	protected $class;
 	/** основная таблица */
@@ -51,7 +54,8 @@ class MySQLOperator {
 	 * Query classes
 	 */
 	protected $classes_allowed =
-		['select', 'update', 'count', 'delete', 'insert'];
+		['select', 'update', 'delete', 'insert'];
+	protected $helper = null;
 
 	/**
 	 * Create MySQLOperator object
@@ -72,27 +76,23 @@ class MySQLOperator {
 			throw new InvalidArgumentException("incorrect class");
 		$this->class = $class;
 		switch ($class) {
-			case 'select':
+			case QC::select:
 				if ($param1)
 					$this->fields = $param1;
 				if ($param2)
 					$this->condition = $param2;
 				break;
-			case 'update':
+			case QC::update:
 				if ($param1)
 					$this->set = $param1;
 				if ($param2)
 					$this->condition = $param2;
 				break;
-			case 'count':
-				if ($param1)
-					$this->fields = QueryGen::gen_count($param1);
-				break;
-			case 'delete':
+			case QC::delete:
 				if ($param1)
 					$this->condition = $param1;
 				break;
-			case 'insert':
+			case QC::insert:
 				if ($param1)
 					$this->fields = $param1;
 				if ($param2)
@@ -175,9 +175,13 @@ class MySQLOperator {
 	 * @param $on условие JOIN
 	 * @param $table таблица
 	 */
-	public function join($table, $on, $prefix = '') {
+	public function join($table, $on = null, $prefix = '') {
 		if (!$this->predicate) {
 			$this->predicate = true;
+			return $this;
+		}
+		if (is_object($table)) {
+			$this->join = array_merge($this->join, $table->get());
 			return $this;
 		}
 		if (is_array($table)) {
@@ -192,6 +196,13 @@ class MySQLOperator {
 			'prefix' => $prefix
 		];
 		return $this;
+	}
+
+	/**
+	 * Pre-cache items for
+	 */
+	public function precache($ids) {
+		return $this->helper->precache($ids);
 	}
 
 	/**
@@ -267,20 +278,19 @@ class MySQLOperator {
 		$r = $dao->perform_query((string) $this);
 		if ($count_affected) {
 			switch($this->class) {
-				case "select":
-				case "count":
+				case QC::select:
 					$aff = $dao->num_rows($r);
 					break;
-				case "delete":
-				case "update":
-				case "insert":
+				case QC::delete:
+				case QC::update:
+				case QC::insert:
 					$aff = $dao->affected_rows($r);
 					break;
 			}
 			return $aff;
 		}
-		$this->xResult = $this->class == 'select'
-			? new DAOIterator($r)
+		$this->xResult = $this->class == QC::select
+			? new DAOIterator($r, $this->dao, $this->helper)
 			: (bool) $r;
 		return $this->xResult;
 	}
@@ -293,6 +303,7 @@ class MySQLOperator {
 		return $this;
 	}
 
+	/** generate select query for condition */
 	protected function genSelect($cond) {
 		$join = '';
 		foreach ($this->join as $v) {
@@ -323,6 +334,7 @@ class MySQLOperator {
 		return $q;
 	}
 
+	/** generate insert query */
 	protected function genInsert() {
 		$what = array_values($this->fields);
 		$fields = array_keys($this->fields);
@@ -350,25 +362,20 @@ class MySQLOperator {
 		if ($this->condition == null) $this->condition = [];
 		$cond = QueryGen::make_cond($this->condition);
 		switch($this->class) {
-			case "select":
+			case QC::select:
 				$q = $this->genSelect($cond);
 				break;
-			case "count":
-				$q = "SELECT " .
-					QueryGen::make_fields($this->fields) .
-					" FROM {$this->from} WHERE $cond";
-				break;
-			case "insert":
+			case QC::insert:
 				$q = $this->genInsert();
 				break;
-			case "update":
+			case QC::update:
 				$set_kv = QueryGen::make_set_kv($this->set);
 				$sset = implode(',', $set_kv);
 				$q = "UPDATE {$this->from}
 					SET $sset
 					WHERE $cond;";
 				break;
-			case "delete":
+			case QC::delete:
 				$q = "DELETE FROM {$this->from}
 					WHERE $cond";
 				break;

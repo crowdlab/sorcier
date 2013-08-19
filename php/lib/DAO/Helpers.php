@@ -44,7 +44,8 @@ trait Helpers {
 				}
 			}
 			if (!$is_operator && $run_q) {
-				$ret = $this->fetch_all($op, function($item) use (&$kv) {
+				$op->precache($ids);
+				$ret = $op->fetch_all(function($item) use (&$kv) {
 					if (!isset($item[static::IdKey]))
 						return $item;
 					$id = (int) $item[static::IdKey];
@@ -66,7 +67,7 @@ trait Helpers {
 			if (isset($v[static::IdKey]) && isset($kv[$v[static::IdKey]]))
 				$v += $kv[$v[static::IdKey]];
 			if (count($with))
-				$v =$this->enrich($v, $with);
+				$v = $this->enrich($v, $with);
 		}
 		return $r;
 	}
