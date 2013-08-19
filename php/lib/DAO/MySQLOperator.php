@@ -202,7 +202,8 @@ class MySQLOperator {
 	 * Pre-cache items for
 	 */
 	public function precache($ids) {
-		return $this->helper->precache($ids);
+		if ($this->helper)
+			return $this->helper->precache($ids);
 	}
 
 	/**
@@ -328,8 +329,10 @@ class MySQLOperator {
 		if ($this->limit) {
 			if ($this->skip)
 				$q .= " LIMIT {$this->skip}, {$this->limit}";
-			else
+			else if (!is_array($this->limit))
 				$q .= " LIMIT {$this->limit}";
+			else
+				$q .= " LIMIT {$this->limit[0]}, {$this->limit[1]}";
 		}
 		return $q;
 	}
