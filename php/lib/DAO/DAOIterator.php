@@ -40,11 +40,11 @@ class DAOIterator implements \Iterator {
 			$func = $schema;
 			$schema = null;
 		}
-		if ($schema === null)
-			if ($this->dao && isset($this->dao->schema))
-				$schema = $this->dao->schema;
-			else
-				$schema = [];
+		if (isset($this->dao) && $schema === null) {
+			$c = get_class($this->dao);
+			if (isset($c::$schema))
+				$schema = $c::$schema;
+		}
 		while($row = mysqli_fetch_assoc($this->result)) {
 			$row = \DAO\MySQLDAO::enforce($schema, $row);
 			$r[]= $row;
@@ -62,11 +62,11 @@ class DAOIterator implements \Iterator {
 			$func = $schema;
 			$schema = null;
 		}
-		if ($schema === null)
-			if ($this->dao && isset($this->dao->schema))
-				$schema = $this->dao->schema;
-			else
-				$schema = [];
+		if (isset($this->dao) && $schema === null) {
+			$c = get_class($this->dao);
+			if (isset($c::$schema))
+				$schema = $c::$schema;
+		}
 		$r = \DAO\MySQLDAO::enforce($schema, mysqli_fetch_assoc($this->result));
 		if ($r && $this->helper)
 			$r = $this->helper->enrich($r);

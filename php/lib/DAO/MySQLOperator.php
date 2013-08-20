@@ -250,14 +250,24 @@ class MySQLOperator {
 	/**
 	 * Если забыть сделать x
 	 */
-	public function fetch_all($schema = []) {
+	public function fetch_all($schema = null) {
+		if (isset($this->dao) && $schema === null) {
+			$c = get_class($this->dao);
+			if (isset($c::$schema))
+				$schema = $c::$schema;
+		}
 		return $this->x()->fetch_all($schema);
 	}
 
 	/**
 	 * Если забыть сделать x
 	 */
-	public function fetch_assoc($schema = []) {
+	public function fetch_assoc($schema = null) {
+		if (isset($this->dao) && $schema === null) {
+			$c = get_class($this->dao);
+			if (isset($c::$schema))
+				$schema = $c::$schema;
+		}
 		return $this->x()->fetch_assoc($schema);
 	}
 
