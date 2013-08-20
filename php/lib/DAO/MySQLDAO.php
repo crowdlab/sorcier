@@ -343,7 +343,7 @@ abstract class MySQLDAO implements IDAO {
 	 * @param $callback обработчик
 	 * @param $id id сущности
 	 */
-	protected static function getFields($request, $allowed = null,
+	protected static function getAllowedFields($request, $allowed = null,
 			$callback = null, $id = null) {
 		$fields = [];
 		if (empty($allowed))
@@ -376,7 +376,6 @@ abstract class MySQLDAO implements IDAO {
 	 *    allowed  Optional поля (по умолчанию берутся из соответствующего DAO)
 	 *    callback вызов для пред-обработки пары ключ-значение
 	 *    retval   вернуть полученные значения
-	 *    schema   схема для возврата
 	 *    throw    кидать ли ошибку если нет изменений
 	 *    special  проверка особых условий (права доступа и т.п.), возвращает true если ок
 	 *    diff     requires retval, вернуть разницу
@@ -388,10 +387,8 @@ abstract class MySQLDAO implements IDAO {
 			'callback' => null,
 			'diff'     => false,
 			'retval'   => true,
-			'schema'   => [],
 			'special'  => null,
 			'throw'    => true,
-			'clear_tr' => false
 		];
 		$params = array_append($params, $params_default);
 		foreach ($params as $k => $v)
@@ -400,22 +397,22 @@ abstract class MySQLDAO implements IDAO {
 		if (!is_array($request)) list($request, $id) = array($id, $request);
 		// filter fields
 		if (!is_array($request)) return null; // error
-		$fields = static::getFields($request, $allowed, $callback, $id);
+		$fields = static::getAllowedFields($request, $allowed, $callback, $id);
 		if ($special && !$special($fields))
 			return ['error' => \Common::InternalError, 'code' => 403];
 		$new_extra = static::filterExtra($request);
 		if ($throw && !count($fields) && !count($new_extra))
 			\Common::die500('no fields to set', $request);
 		$cond = is_array($id) ? $id : [static::IdKey => $id];
-		$ar = 0;
+		$aff_rows = 0;
 		if ($diff) {
-			$r = FnMySQL::select(array_keys($fields))
-				->from($this->getName())->where($cond);
-			$prev = self::enforce($schema, self::getFirst($r->x()));
+			$r = $this->select_fn(array_keys($fields))->where($cond);
+			$item = $this->fetch_assoc($r);
+			$prev = self::enforce(static::$schema, $item);
 		}
 		if (count($fields) > 0) {
 			$this->update($fields, $cond);
-			$ar = $this->affected_rows();
+			$aff_rows = $this->affected_rows();
 		}
 
 		$extra = [];
@@ -424,23 +421,18 @@ abstract class MySQLDAO implements IDAO {
 			if ($r) $extra[$k] = $r;
 		}
 
-		$res = ['message' => 'ok', 'rows' => $ar];
+		$res = ['message' => 'ok', 'rows' => $aff_rows];
 		if (count($extra) > 0)
 			$res['extra'] = $extra;
 		if ($retval) {
 			// return selected values
-			if (count($schema) == 0 && isset(static::$schema))
-				$schema = static::$schema;
-			$r = FnMySQL::select(array_keys($fields))
-				->from($this->getName())->where($cond);
-			$item = self::enforce($schema, self::getFirst($r->x()));
+			$r = $this->select_fn(array_keys($fields))->where($cond);
+			$item = self::enforce(static::$schema, self::getFirst($r->x()));
 			$res['fields'] = $item;
 			$res['extra']  = $extra;
 			if ($diff)
 				$res['diff'] = array_diff_values($item, $prev);
 		}
-		if (isset(static::$translationFields) && $clear_tr)
-			$this->clearTranslations($id);
 		return $res;
 	}
 
@@ -489,7 +481,7 @@ abstract class MySQLDAO implements IDAO {
 		if (!$r) return 0;
 		return $r instanceof \mysqli_result
 			? mysqli_num_rows($r)
-			: $r->num_rows(); // FnMySQL cross support
+			: $r->num_rows();
 	}
 
 	/**

@@ -90,7 +90,7 @@ trait CollectionTrait {
 			$value = $this->addModHelper($value);
 		if ($value === false)
 			return ['error' => 'not modified', 'code' => 403];
-		$params = ['id_key' => static::IdKey, 'throw' => false];
+		$params = ['throw' => false];
 		if (isset($value['id']) && static::IdKey != 'id')
 			$value[static::IdKey] = $value['id'];
 		if (isset($value[static::IdKey])) {
