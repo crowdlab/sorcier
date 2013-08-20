@@ -71,8 +71,7 @@ class DAOIterator implements \Iterator {
 		if ($r && $this->helper)
 			$r = $this->helper->enrich($r);
 		if ($func)
-			foreach($r as &$row)
-				$row = call_user_func($func, $row);
+			$r = call_user_func($func, $r);
 		return $r;
 	}
 

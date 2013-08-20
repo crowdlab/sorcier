@@ -251,7 +251,7 @@ class MySQLOperator {
 	 * Если забыть сделать x
 	 */
 	public function fetch_all($schema = null, $func = null) {
-		if (is_callable($schema)) {
+		if (is_callable($schema) && $func == null) {
 			$func = $schema;
 			$schema = null;
 		}
@@ -267,7 +267,7 @@ class MySQLOperator {
 	 * Если забыть сделать x
 	 */
 	public function fetch_assoc($schema = null, $func = null) {
-		if (is_callable($schema)) {
+		if (is_callable($schema) && $func == null) {
 			$func = $schema;
 			$schema = null;
 		}
