@@ -355,7 +355,8 @@ abstract class MongoDAO implements IDAO {
 		if (!isset($set['$push'])
 			&& !isset($set['$pull'])
 			&& !isset($set['$set'])
-			&& !isset($set['$unset']))
+			&& !isset($set['$unset'])
+			&& !isset($set['$addToSet']))
 			$set = ['$set' => $set];
 		return $coll->update($condition, $set, $options);
 	}

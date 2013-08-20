@@ -49,9 +49,7 @@ class UploadHandler {
 					'upload_dir'   => $config["files"]["path"] . "100x100_",
 					'upload_url'   => $config["files"]["url"] . "100x100_",
 					'width'    => 100,
-					'height'   => 100,
-					'jpeg_quality' => 95,
-					'png_quality'  => 9
+					'height'   => 100
 				),
 
 				'128x128' => array(
@@ -177,7 +175,7 @@ class UploadHandler {
 				$src_img = \imagecreatefromjpeg($file_path);
 				$write_image = 'imagejpeg';
 				$image_quality = isset($options['jpeg_quality']) ?
-					$options['jpeg_quality'] : 75;
+					$options['jpeg_quality'] : 100;
 				break;
 			case 'gif':
 				imagecolortransparent($new_img,
