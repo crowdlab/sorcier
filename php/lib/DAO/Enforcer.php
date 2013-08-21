@@ -38,15 +38,17 @@ trait Enforcer {
 					continue;
 					break;
 				case 'ascii':
-					if (!is_null($v) && !is_array($v)) {
+					if (!is_null($v) && !is_array($v) && $v !== '') {
 						if (!preg_match('/^[a-z][a-z0-9\-]*$/', $v)) {
 							$v = str_replace(\Common::$toreplace, \Common::$replacement, $v);
 							$v = strtolower($v);
 							$v = preg_replace('/[^a-z0-9\-]/', "", $v);
 							if (!preg_match('/^[a-z]/', $v)) $v = "o$v";
 						}
-					} else
+					} else {
+						$unsetf []= $k;
 						$v = '';
+					}
 					break;
 				case 'json':
 					$v = json_decode($v);
