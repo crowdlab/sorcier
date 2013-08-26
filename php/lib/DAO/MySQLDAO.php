@@ -14,7 +14,7 @@ abstract class MySQLDAO implements IDAO {
 	abstract public function getName();
 
 	/**
-	 * Функции для проверки полей, приходящих на изменение
+	 * Field checker functions
 	 */
 	protected static $checkers = [];
 	/**
@@ -23,7 +23,7 @@ abstract class MySQLDAO implements IDAO {
 	protected $started = false;
 
 	/**
-	 * Проверить, все ли обязательные поля на месте
+	 * Check if required fields are set
 	 */
 	public static function checkRequired($rqst, &$fields = null, $for = null) {
 		if (!is_array($rqst)) return false;
@@ -41,7 +41,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Начать транзакцию
+	 * Start transaction
 	 */
 	public function start() {
 		if ($this->started) return;
@@ -51,7 +51,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Откатить транзакцию
+	 * Roll back transaction
 	 */
 	public function rollback() {
 		$this->perform_query('ROLLBACK');
@@ -59,7 +59,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Завершить транзакцию успешно (записать)
+	 * Commit transaction
 	 */
 	public function commit() {
 		if (!$this->started) return;
@@ -68,7 +68,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Есть ли в схеме такая таблица
+	 * Check if table exists
 	 */
 	public function hasTable($table = null) {
 		if ($table == null) $table = $this->getName();
@@ -78,7 +78,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Выполнить запрос
+	 * Run query
 	 */
 	public static function perform_query($q) {
 		\logger\Log::instance()->logDebug("SQL: $q");
@@ -105,7 +105,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Получить идентификатор последней добавленной записи
+	 * Get last insert id
 	 */
 	public function insert_id() {
 		$_DB = \Connector::getInstance()->getMySQL();
@@ -113,13 +113,12 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Выборка
+	 * Select
 	 *
-	 * @param array $fields     поля
-	 * @param array $condition  условие (поддерживаются операторы,
-	 * подробнее см. `QueryGen::make_cond()` )
-	 * @param array|integer $limit  Optional сколько пропустить (по умолчанию 0)
-	 * @param string $join      дополнительная часть запроса (JOIN)
+	 * @param array $fields
+	 * @param array $condition
+	 * @param array|integer $limit
+	 * @param string $join
 	 */
 	public function select($fields, $condition = [], $limit = null,
 			$orderby = null, $join = '') {
@@ -131,9 +130,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Вернуть точное количество элементов по условию
-	 *
-	 * Может быть медленно, в зависимости от условия
+	 * Select count(field) where condition
 	 */
 	public function count($field, $condition) {
 		$field = $field == 1 ? $field : "`$field`";
@@ -150,12 +147,10 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Обновление записи
+	 * Update record
 	 *
-	 * @param array $set        список обновляемых полей таблицы
-	 * и новые значения в виде 'имя поля'='значение'
-	 * @param array $condition  условие (поддерживаются операторы,
-	 * подробнее см. `QueryGen::make_cond()` )
+	 * @param array $set updated fields
+	 * @param array $condition
 	 */
 	public function update($set, $condition, $suffix = '') {
 		$cond = QueryGen::make_cond($condition);
@@ -172,10 +167,10 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Сгенерировать блок полей для join
-	 * @param $fields поля
-	 * @param $table  алиас связанной таблицы
-	 * @param $prefix префикс полей
+	 * Generate join part of query
+	 * @param $fields
+	 * @param $table
+	 * @param $prefix
 	 */
 	protected static function joinFields($fields, $table, $prefix) {
 		$ret = [];
@@ -185,7 +180,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Обновление записи
+	 * Update record (functional)
 	 *
 	 * @param array $set kv
 	 */
@@ -195,8 +190,8 @@ abstract class MySQLDAO implements IDAO {
 
 	/**
 	 * Functional style select
-	 * @param $fields поля
-	 * @param $cond условие (опционально)
+	 * @param $fields
+	 * @param $cond
 	 */
 	public function select_fn($fields, $cond = null) {
 		$fields = $this->prefixWithName($fields);
@@ -205,10 +200,10 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Выполнить вставку массива данных
-	 * @param $kv массив
+	 * Insert record
+	 * @param $kv
 	 * @param bool $ignore insert ignore
-	 * @param string $suffix дополнение к запросу (например, 'ON DUPLICATE KEY UPDATE ...')
+	 * @param string $suffix request suffix (like, 'ON DUPLICATE KEY UPDATE ...')
 	 */
 	public function push($kv, $ignore = false, $suffix = '') {
 		if (isset(static::$schema))
@@ -218,11 +213,11 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Вставка записей в базу
-	 * @param array $fields поля
-	 * @param array $what значения
+	 * Insert records
+	 * @param array $fields
+	 * @param array $what
 	 * @param bool $ignore insert ignore
-	 * @param string $suffix дополнение к запросу (например, 'ON DUPLICATE KEY UPDATE ...')
+	 * @param string $suffix request suffix (like, 'ON DUPLICATE KEY UPDATE ...')
 	 */
 	public function insert($fields, $what = null, $ignore = false, $suffix = '') {
 		// single kv array
@@ -251,11 +246,9 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Удаление записей
+	 * remove records
 	 *
-	 * @param array $condition  условие (поддерживаются операторы,
-	 * подробнее см. `QueryGen::make_cond()` )
-	 * @deprecated если нужно удалить, стоит использовать deleteItem
+	 * @param array $condition
 	 */
 	public function delete($condition) {
 		$cond = QueryGen::make_cond($condition);
@@ -267,9 +260,9 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Пометить записи, сответствующие условию удаленными
-	 * @param $condition условие
-	 * @param $field поле-флаг (по умолчанию deleted)
+	 * mark recored as deleted
+	 * @param $condition
+	 * @param $field
 	 */
 	public function deleteItem($condition, $field = 'deleted', $dval = 1) {
 		return $this->update([$field => $dval], $condition);
@@ -292,7 +285,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Добавить префиксы к ключам условия
+	 * Add table name prefixes to condition fields
 	 */
 	public function prefixCond($cond) {
 		if (!is_array($cond)) return $cond;
@@ -308,7 +301,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Добавить префикс с названием таблицы к массиву полей
+	 * add table name prefix to array of records
 	 */
 	public function prefixWithName($array) {
 		$name = $this->getName();
@@ -337,11 +330,11 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Оставить только разрешенные поля, применить обработчик, если требуется
-	 * @param $request  запрос на модификацию
-	 * @param $allowed  разрешенные поля
-	 * @param $callback обработчик
-	 * @param $id id сущности
+	 * Leave only permitted fields
+	 * @param $request  modification query
+	 * @param $allowed  permitter fields
+	 * @param $callback result handler
+	 * @param $id
 	 */
 	protected static function getAllowedFields($request, $allowed = null,
 			$callback = null, $id = null) {
@@ -368,17 +361,17 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Модификация простой сущности в MySQL
+	 * Modify simple entity
 	 *
-	 * @param array     $request  запрос (новые значения)
-	 * @param integer   $id       id сущности
+	 * @param array     $request  request (new values)
+	 * @param integer   $id       entity id
 	 * @param array     $params:
-	 *    allowed  Optional поля (по умолчанию берутся из соответствующего DAO)
-	 *    callback вызов для пред-обработки пары ключ-значение
-	 *    retval   вернуть полученные значения
-	 *    throw    кидать ли ошибку если нет изменений
-	 *    special  проверка особых условий (права доступа и т.п.), возвращает true если ок
-	 *    diff     requires retval, вернуть разницу
+	 *    allowed  optional fields
+	 *    callback key-value processing callback
+	 *    retval   return whole changed record
+	 *    throw    throw exception if no changes (not thrown by default)
+	 *    special  special conditions checker
+	 *    diff     requires retval, return changed fields
 	 * @return [ 'message' => ok, 'rows' => 1, 'fields' => [...] ]
 	 */
 	public function modItem($request, $id, $params = []) {
@@ -437,7 +430,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Выделить доп поля (данные, сохраняемые через другие DAO)
+	 * Filter extra fields (not saved by this DAO directly)
 	 */
 	public static function filterExtra($fields) {
 		$ret = [];
@@ -450,7 +443,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Вернуть первый элемент массива (первый в итерации)
+	 * Return first element of iterator (applying transform if needed)
 	 */
 	protected static function getFirst($x, $transform = null) {
 		foreach ($x as $v)
@@ -458,7 +451,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * The function returns the count of affected rows.
+	 * Return affected rows count
 	 */
 	public function affected_rows() {
 		$_DB = \Connector::getInstance()->getMySQL();
@@ -466,7 +459,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Существует проект/задача
+	 * Check if entity matching condition exists
 	 */
 	public function exists($cond) {
 		if (!is_array($cond)) $cond = [static::IdKey => $cond];
@@ -485,7 +478,7 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * The function returns a result row as an associative array.
+	 * Returns result row as an associative array
 	 * @param $r call result
 	 * @param $schema transformation schema
 	 * @param $func transform function
@@ -507,10 +500,10 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Выбрать все записи из набора
-	 * @param $r результат
-	 * @param $schema схема
-	 * @param $func преобразование
+	 * Fetch all records
+	 * @param $r query result
+	 * @param $schema  schema
+	 * @param $func    transform function
 	 */
 	public function fetch_all($r, $schema = null, $func = null, $limit = null) {
 		$result = [];
@@ -541,8 +534,8 @@ abstract class MySQLDAO implements IDAO {
 	}
 
 	/**
-	 * Выбрать с числовыми индексами
-	 * @param $r результат
+	 * Fetch results w/ digital indices
+	 * @param $r query result
 	 */
 	public function fetch_array($r) {
 		return mysqli_fetch_array($r, MYSQL_NUM);
