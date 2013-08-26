@@ -24,7 +24,7 @@ class Select {
 			: '1';
 		$cond = \DAO\QueryGen::make_cond($condition);
 		$q = "SELECT $sfields
-		      FROM $table_name
+		      FROM `$table_name`
 		      $join
 		      WHERE $cond";
 		if (isset($orderby)) {

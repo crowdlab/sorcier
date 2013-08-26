@@ -140,7 +140,7 @@ abstract class MySQLDAO implements IDAO {
 		$table_name = $this->getName();
 		$cond = QueryGen::make_cond($condition);
 		$q = "SELECT count($field) as `count`
-		      FROM   $table_name
+		      FROM   `$table_name`
 		      WHERE  $cond";
 		return $this->fetch_assoc(
 			$this->perform_query($q),
@@ -164,7 +164,7 @@ abstract class MySQLDAO implements IDAO {
 		$set_kv = QueryGen::make_set_kv($set);
 		$sset = implode(',', $set_kv);
 		$table_name = $this->getName();
-		$q = "UPDATE $table_name
+		$q = "UPDATE `$table_name`
 		      SET    $sset
 		      WHERE  $cond
 			  $suffix;";
@@ -244,7 +244,7 @@ abstract class MySQLDAO implements IDAO {
 		$table_name = $this->getName();
 		$ign = $ignore ? 'IGNORE' : '';
 		$q = "INSERT $ign
-		      INTO $table_name $fields_s
+		      INTO `$table_name` $fields_s
 		      VALUES $ins
 		      $suffix";
 		return $this->perform_query($q);
@@ -261,7 +261,7 @@ abstract class MySQLDAO implements IDAO {
 		$cond = QueryGen::make_cond($condition);
 		$table_name = $this->getName();
 		$q = "DELETE
-		      FROM $table_name
+		      FROM `$table_name`
 		      WHERE $cond";
 		return $this->perform_query($q);
 	}

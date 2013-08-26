@@ -331,7 +331,7 @@ class MySQLOperator {
 		}
 		$q = "SELECT " .
 			QueryGen::make_fields($this->fields) .
-			" FROM {$this->from} $join WHERE $cond";
+			" FROM `{$this->from}` $join WHERE $cond";
 		if ($this->groupby) {
 			$q .= " GROUP BY {$this->groupby}";
 			if ($this->having) {
@@ -371,7 +371,8 @@ class MySQLOperator {
 			$this->suffix = " ON DUPLICATE KEY UPDATE $sset";
 		}
 		$q = "INSERT$ign
-			INTO {$this->from} $fields_s
+			INTO `{$this->from}`
+			$fields_s
 			VALUES $ins
 			{$this->suffix}";
 		return $q;
@@ -392,12 +393,12 @@ class MySQLOperator {
 			case QC::update:
 				$set_kv = QueryGen::make_set_kv($this->set);
 				$sset = implode(',', $set_kv);
-				$q = "UPDATE {$this->from}
+				$q = "UPDATE `{$this->from}`
 					SET $sset
 					WHERE $cond;";
 				break;
 			case QC::delete:
-				$q = "DELETE FROM {$this->from}
+				$q = "DELETE FROM `{$this->from}`
 					WHERE $cond";
 				break;
 			default:
