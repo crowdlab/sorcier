@@ -9,25 +9,25 @@ abstract class RedisDAO {
 	use \DAO\RedisList;
 
 	/**
-	 * Возвращает коннектор к Редису
+	 * Return redis connector
 	 */
 	protected function redis() {
 		return \Connector::getInstance()->getRedis();
 	}
 
 	/**
-	 * Контекст
+	 * Context
 	 * @return string
 	 */
 	abstract public function getName();
 	/**
-	 * Время хранения переменной в секундах
+	 * Default storage timeout
 	 * @return integer
 	 */
 	abstract public function getTimeout();
 
 	/**
-	 * Произвести выборку
+	 * Select by hash (single or multi)
 	 * @param mixed $fields
 	 *	null - получить все
 	 *	string - получить значение по ключу
@@ -52,24 +52,22 @@ abstract class RedisDAO {
 	}
 
 	/**
-	 * Обновление хеша
-	 * @param array $fields массив ключ => значение или просто строка
-	 * @return boolean true - обновление удалось, false - не получилося
+	 * Update by hash
+	 * @param array $fields key-value
+	 * @return boolean
 	 */
 	public function updateHash($fields) {
 		return $this->insertHash($fields);
 	}
 
 	/**
-	 * Добавление хеша
-	 * @param array $fields массив ключ => значение
-	 * @return boolean true - вставка удалась, false - не получилося
+	 * Insert into hash
+	 * @param array $fields key-value
+	 * @return boolean
 	 */
 	public function insertHash($fields, $val = null) {
-		if ($val != null && is_string($fields)) {
-			// single pair case
-			$fields = array($fields => $val);
-		}
+		if ($val != null && is_string($fields))
+			$fields = [$fields => $val];
 		$res = $this->redis()->hMset($this->getName(), $fields);
 		$this->redis()->setTimeout($this->getName(), $this->getTimeout());
 		return $res;
@@ -83,35 +81,31 @@ abstract class RedisDAO {
 	}
 
 	/**
-	 * Удаление ключа в хеше
-	 * @param string $hashKey ключ в хеше
-	 * @return boolean true - удаление удалось, false - не получилося
+	 * Remove key in hash
+	 * @param string $hashKey
+	 * @return boolean
 	 */
 	public function deleteHash($hashKey) {
 		return $this->redis()->hDel($this->getName(), $hashKey);
 	}
 
 	/**
-	 * Подсчет ключей
-	 * @return integer количество ключей в хеше
+	 * Count keys in hash
+	 * @return integer
 	 */
 	public function countHash() {
 		return $this->redis()->hLen($this->getName());
 	}
 	
 	/**
-	 * Удаление данных в контексте $this->getName()
+	 * Delete all by name $this->getName()
 	 */
 	public function deleteAll() {
 		return $this->redis()->delete($this->getName());
 	}
 	
 	/**
-	 * Обработка строки
-	 */
-	
-	/**
-	 * Произвести выборку
+	 * Select string by key
 	 * @return string value
 	 */
 	public function selectString($suffix = '') {
@@ -124,7 +118,7 @@ abstract class RedisDAO {
 	const DELIMITER = ':';
 
 	/**
-	 * Получить ключ по набору аргументов
+	 * Make key according to args
 	 */
 	protected static function mkKey() {
 		$args = func_get_args();
@@ -132,8 +126,8 @@ abstract class RedisDAO {
 	}
 
 	/**
-	 * Увеличить счетчик с протуханием
-	 * @param $suffix ключ суффикса
+	 * Rate increment
+	 * @param $suffix
 	 */
 	public function rateInc($suffix = '') {
 		if ($this->selectString($suffix) == null) {
@@ -146,30 +140,34 @@ abstract class RedisDAO {
 	}
 
 	/**
-	 * Обновить
+	 * Update record
 	 */
 	public function updateString($value, $suffix = '') {
 		return $this->insertString($value, $suffix);
 	}
 
 	/**
-	 * Установка значения
-	 * @param string $value - значение
-	 * @param string $suffix суффикс ключа
-	 * @return boolean true - вставка удалась, false - не получилося
+	 * Insert string
+	 * @param string $value
+	 * @param string $suffix
+	 * @return boolean
 	 */
 	public function insertString($value, $suffix = '') {
-		$key = $suffix ? static::mkKey($this->getName(), $suffix) : $this->getName();
+		$key = $suffix
+			? static::mkKey($this->getName(), $suffix)
+			: $this->getName();
 		return $this->redis()->setex($key, $this->getTimeout(), $value);
 	}
 	
 	/**
-	 * Увеличение значения
-	 * @param string $suffix суффикс ключа
-	 * @return boolean true - вставка удалась, false - не получилося
+	 * Increment record
+	 * @param string $suffix
+	 * @return boolean
 	 */
 	public function incr($suffix = '') {
-		$key = $suffix ? static::mkKey($this->getName(), $suffix) : $this->getName();
+		$key = $suffix
+			? static::mkKey($this->getName(), $suffix)
+			: $this->getName();
 		$res = $this->redis()->incr($key);
 		return $res;
 	}

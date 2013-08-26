@@ -39,7 +39,7 @@ class QueryGen {
 	}
 
 	/**
-	 * Обернуть в кавычки название поля (если оно похоже на ключевое слово sql, например)
+	 * Quote field name
 	 */
 	protected static function make_key($v) {
 		return (strpos($v, '.') !== false || strlen($v) > 0 && $v[0] == '`'
@@ -105,7 +105,7 @@ class QueryGen {
 	}
 
 	/**
-	 * поддерживаемые операторы
+	 * supported operators
 	 * @readonly
 	 */
 	public static $operators = ['or', '$or', '$in', '<', '>', '<=', '>=', '!=',
