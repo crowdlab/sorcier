@@ -28,7 +28,7 @@ abstract class MongoDAO implements IDAO {
 	const DATE_FORMAT = 'd.m.Y H:i';
 
 	/**
-	 * Получить экземпляр рабочей коллекции
+	 * Get working MongoCollection
 	 *
 	 * @return \MongoCollection
 	 */
@@ -60,7 +60,7 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Подготовить отдельное условие в запросе
+	 * Prepare condition (key-value pair)
 	 */
 	protected static function process_condition($k, $v) {
 		$r = [];
@@ -83,7 +83,7 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Условие с условным оператором
+	 * Generate condition w/ conditional operator
 	 */
 	protected static function cond_cond($k, $v) {
 		$trans = [
@@ -102,14 +102,14 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Модификация простой сущности в Mongo
+	 * Modify simple mongo entity
 	 *
-	 * @param array   $request запрос (новые значения)
-	 * @param integer $id      id сущности | условие
+	 * @param array   $request updated fields
+	 * @param integer $id      id | condition
 	 * @param array   $params:
-	 *   allowed  Optional поля (по умолчанию берутся из соответствующего DAO)
-	 *   callback вызов для пред-обработки пары ключ-значение
-	 *   retval   вернуть полученные значения
+	 *   allowed
+	 *   callback key-value processing callback
+	 *   retval   return updated records
 	 * @return [ 'message' => ok, 'rows' => 1, 'fields' => [...] ]
 	 */
 	public function modItem($request, $id, $params = []) {
@@ -158,7 +158,7 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Вернуть первый элемент массива (первый в итерации)
+	 * Get first element in iteration
 	 */
 	protected static function getFirst($x) {
 		foreach ($x as $v)
@@ -166,7 +166,7 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Подготовить условие для передачи на драйвер
+	 * Prepare condition
 	 *
 	 * @param $condition  условие
 	 */
@@ -174,21 +174,20 @@ abstract class MongoDAO implements IDAO {
 		$result = [];
 		foreach ($condition as $k => $v) {
 			$r = static::process_condition($k, $v);
-			if ($r) {
-				$result[$r['k']] = (isset($result[$r['k']]))
-					? array_merge($result[$r['k']], $r['v'])
-					: $r['v'];
-			}
+			if (!$r) continue;
+			$result[$r['k']] = (isset($result[$r['k']]))
+				? array_merge($result[$r['k']], $r['v'])
+				: $r['v'];
 		}
 		return $result;
 	}
 
 	/**
-	 * Выбрать все записи из набора
-	 * @param $r результат
-	 * @param $schema схема
-	 * @param $func преобразование
-	 * @param $limit ограничение
+	 * Fetch all records
+	 * @param $r query result
+	 * @param $schema  schema
+	 * @param $func    transformer
+	 * @param $limit   limit
 	 */
 	public function fetch_all($r, $schema = null, $func = null, $limit = null) {
 		$result = [];
@@ -215,7 +214,7 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Выбрать очередную запись в виде ассоциативного массива
+	 * Fetch a record as an associative array
 	 *
 	 * @param \MongoCursor $r
 	 * @return array
@@ -239,9 +238,9 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Выборка
+	 * Selection
 	 *
-	 * Поддерживаются операторы, подробнее
+	 * Operators supported, see
 	 * {@link http://www.mongodb.org/display/DOCS/Atomic+Operations}
 	 */
 	public function select($fields = [], $condition,
@@ -268,14 +267,13 @@ abstract class MongoDAO implements IDAO {
 	 * Make string value of id from MongoID for returned object
 	 */
 	public static function remapId($v) {
-		// TODO: recursive
 		$v['id'] = (string) $v[static::IdKey];
 		unset($v['_id']);
 		return $v;
 	}
 
 	/**
-	 * Make string value of id from MongoID for returned array of objects
+	 * Make string value of mongo id
 	 */
 	public static function remapIds($items) {
 		$items_mapped = [];
@@ -290,7 +288,7 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Make from MongoDate int value of seconds
+	 * Make seconds from MongoDate int
 	 */
 	public static function remapDates($items) {
 		if ($items instanceof \MongoDate) {
@@ -307,7 +305,7 @@ abstract class MongoDAO implements IDAO {
 		return $items_mapped;
 	}
 
-	/** получить дату в формате mongo */
+	/** Generate date in Mongo format */
 	public static function gen_date($date = null) {
 		if (!isset($date)) $date = time();
 		if (is_object($date) && get_class($date) == 'DateTime')
@@ -316,12 +314,12 @@ abstract class MongoDAO implements IDAO {
 			return new \MongoDate($date);
 	}
 
-	/** получить новый mongo id для вставки */
+	/** Get new mongo id */
 	public static function gen_id() {
 		return new \MongoId();
 	}
 
-	/** получить из строкового id mongo'вский */
+	/** Make mongo in from string */
 	public static function make_id($id) {
 		if (is_object($id)) return $id;
 		if (\Common::is_valid_mongoId($id))
@@ -329,21 +327,11 @@ abstract class MongoDAO implements IDAO {
 		return null;
 	}
 
-	/** получить MongoDate из разных форматов (число/строка/MongoDate) */
-	public static function make_date($date = null) {
-		if (!isset($date)) $date = time();
-		if (is_int($date))
-			return new \MongoDate($date);
-		else if (!is_object($date))
-			return new \MongoDate(strtotime($date));
-		else return $date;
-	}
-
 	/**
-	 * Обновить запись
-	 * @param array $set что установить
-	 * @param $condition условие выборки
-	 * @param $options условия вставки (по умолчанию не создает новый документ, не обновляет множество документов, а только один)
+	 * Update record
+	 * @param array $set updated fields
+	 * @param $condition update condition
+	 * @param $options
 	 */
 	public function update($set, $condition, $options = ['upsert' => false, 'multi' => false]) {
 		$condition = $this->prepare_cond($condition);
@@ -362,8 +350,8 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Вставка
-	 * @param $kv массив
+	 * Insert new record
+	 * @param $kv
 	 */
 	public function save($kv, $ignore = false) {
 		$coll = $this->getCollection();
@@ -372,8 +360,8 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Вставка
-	 * @param $kv массив
+	 * Insert new record
+	 * @param $kv
 	 */
 	public function push($kv, $ignore = false) {
 		$coll = $this->getCollection();
@@ -383,9 +371,9 @@ abstract class MongoDAO implements IDAO {
 	}
 
 	/**
-	 * Вставка
-	 * @param $fields поля
-	 * @param $what значения
+	 * Insert array of records
+	 * @param $fields fields
+	 * @param $what   values
 	 */
 	public function insert($fields, $what, $ignore = false) {
 		$coll = $this->getCollection();
@@ -416,8 +404,6 @@ abstract class MongoDAO implements IDAO {
 		$coll = $this->getCollection();
 		return $coll->count($condition);
 	}
-
-	// TODO (vissi): mapreduce
 
 	/**
 	 * Perform full-text search (MongoDB 2.4+)
