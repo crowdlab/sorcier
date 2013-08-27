@@ -103,12 +103,15 @@ class MySQLOperator {
 		}
 	}
 
+	protected static function quoteTableName($v) {
+		return (strpos($v, ' ') !== false) ? $v : "`$v`";
+	}
+
 	/**
 	 * основная таблица для изменения
 	 */
 	public function in($from) {
-		$this->from = $from;
-		return $this;
+		return $this->from($from);
 	}
 
 	/**
@@ -123,8 +126,7 @@ class MySQLOperator {
 	 * основная таблица вставки
 	 */
 	public function into($from) {
-		$this->from = $from;
-		return $this;
+		return $this->from($from);
 	}
 
 	/**
@@ -135,7 +137,7 @@ class MySQLOperator {
 			$this->dao = $from;
 			$from = $from->getName();
 		}
-		$this->from = $from;
+		$this->from = static::quoteTableName($from);
 		return $this;
 	}
 
@@ -331,7 +333,7 @@ class MySQLOperator {
 		}
 		$q = "SELECT " .
 			QueryGen::make_fields($this->fields) .
-			" FROM `{$this->from}` $join WHERE $cond";
+			" FROM {$this->from} $join WHERE $cond";
 		if ($this->groupby) {
 			$q .= " GROUP BY {$this->groupby}";
 			if ($this->having) {
@@ -371,7 +373,7 @@ class MySQLOperator {
 			$this->suffix = " ON DUPLICATE KEY UPDATE $sset";
 		}
 		$q = "INSERT$ign
-			INTO `{$this->from}`
+			INTO {$this->from}
 			$fields_s
 			VALUES $ins
 			{$this->suffix}";
@@ -393,12 +395,12 @@ class MySQLOperator {
 			case QC::update:
 				$set_kv = QueryGen::make_set_kv($this->set);
 				$sset = implode(',', $set_kv);
-				$q = "UPDATE `{$this->from}`
+				$q = "UPDATE {$this->from}
 					SET $sset
 					WHERE $cond;";
 				break;
 			case QC::delete:
-				$q = "DELETE FROM `{$this->from}`
+				$q = "DELETE FROM {$this->from}
 					WHERE $cond";
 				break;
 			default:

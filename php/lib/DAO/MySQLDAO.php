@@ -22,6 +22,10 @@ abstract class MySQLDAO implements IDAO {
 	 */
 	protected $started = false;
 
+	protected static function quoteTableName($v) {
+		return (strpos($v, ' ') !== false) ? $v : "`$v`";
+	}
+
 	/**
 	 * Check if required fields are set
 	 */
@@ -134,10 +138,10 @@ abstract class MySQLDAO implements IDAO {
 	 */
 	public function count($field, $condition) {
 		$field = $field == 1 ? $field : "`$field`";
-		$table_name = $this->getName();
+		$table_name = static::quoteTableName($this->getName());
 		$cond = QueryGen::make_cond($condition);
 		$q = "SELECT count($field) as `count`
-		      FROM   `$table_name`
+		      FROM   $table_name
 		      WHERE  $cond";
 		return $this->fetch_assoc(
 			$this->perform_query($q),
@@ -158,8 +162,8 @@ abstract class MySQLDAO implements IDAO {
 			$set = static::enforce(static::$schema, $set);
 		$set_kv = QueryGen::make_set_kv($set);
 		$sset = implode(',', $set_kv);
-		$table_name = $this->getName();
-		$q = "UPDATE `$table_name`
+		$table_name = static::quoteTableName($this->getName());
+		$q = "UPDATE $table_name
 		      SET    $sset
 		      WHERE  $cond
 			  $suffix;";
@@ -236,10 +240,11 @@ abstract class MySQLDAO implements IDAO {
 			$ins = QueryGen::make_insert($what);
 		}
 		$fields_s = '(' . QueryGen::make_fields($fields) . ')';
-		$table_name = $this->getName();
+		$table_name = static::quoteTableName($this->getName());
 		$ign = $ignore ? 'IGNORE' : '';
 		$q = "INSERT $ign
-		      INTO `$table_name` $fields_s
+		      INTO $table_name
+			  $fields_s
 		      VALUES $ins
 		      $suffix";
 		return $this->perform_query($q);
@@ -252,9 +257,9 @@ abstract class MySQLDAO implements IDAO {
 	 */
 	public function delete($condition) {
 		$cond = QueryGen::make_cond($condition);
-		$table_name = $this->getName();
+		$table_name = static::quoteTableName($this->getName());
 		$q = "DELETE
-		      FROM `$table_name`
+		      FROM $table_name
 		      WHERE $cond";
 		return $this->perform_query($q);
 	}
