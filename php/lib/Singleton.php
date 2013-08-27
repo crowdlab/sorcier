@@ -8,7 +8,7 @@ trait Singleton {
 	/**
 	 * Set instance manually (for the sake of testing)
 	 *
-	 * @param static $inst  экземпляр
+	 * @param static $inst  instance
 	 * @return void
 	 */
 	public static function setInstance($inst) {
@@ -31,7 +31,7 @@ trait Singleton {
 	}
 
 	/**
-	 * Reset instance. This method can be used for debugging/testing purposes, not production.
+	 * Reset instance. Used for debugging/testing purposes.
 	 *
 	 * @return void
 	 * @static
@@ -53,7 +53,8 @@ trait Singleton {
 	 */
 	protected function init() { }
 
-	private function __wakeup() { } // Mockery needs to override __wakeup
+	// Mockery needs to override __wakeup
+	private function __wakeup() { }
 
 	final private function __clone() { }
 }

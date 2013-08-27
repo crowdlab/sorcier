@@ -25,11 +25,9 @@ abstract class UserSingletonBase {
 		static::$instance[$calledClass] = $inst;
 	}
 
-	final private function __clone() { /* ... @return UserSingleton */
-	}
+	final private function __clone() { }
 
-	private function __wakeup() { /* ... @return UserSingleton */
-	} // Mockery needs to override __wakeup
+	private function __wakeup() {  }
 
 	/**
 	 * This function returns whether user is actually logged in
