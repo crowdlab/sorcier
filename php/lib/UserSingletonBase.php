@@ -64,11 +64,6 @@ abstract class UserSingletonBase {
 	}
 
 	/**
-	 * After login, $session['user'] should be set
-	 */
-	abstract public static function login($params);
-
-	/**
 	 * Get user info
 	 *
 	 * @return array
