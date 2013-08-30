@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/../lib/autoload.php.inc';
 
+function int_divide($x, $y) {
+	return ($x - ($x % $y)) / $y;
+}
+
 /**
  * Сhecks the existence and returns HTTP request variable
  * fails on missing value or incorrect mongo id
