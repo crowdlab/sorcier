@@ -13,6 +13,7 @@ trait SelectListTrait {
 		$cond = $ids
 			? [static::IdKey => ['$in' => $ids]]
 			: $default_cond;
+		if (!is_array($ids)) $ids = [];
 		$join = implode(',', $ids);
 		return $this->select($fields, $cond, $limit,
 			$join ? " FIND_IN_SET(id,'$join')" : null);
