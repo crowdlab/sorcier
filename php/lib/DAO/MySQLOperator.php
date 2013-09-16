@@ -2,25 +2,27 @@
 namespace DAO;
 use DAO;
 use DAO\QueryClass as QC;
+
 /**
  * Functional MySQL Operator
  */
 class MySQLOperator {
 	use DAO\Operator\Traits\Mongo;
+	use DAO\Operator\Traits\XHelpers;
 
-	/** класс запроса */
+	/** query class */
 	protected $class;
-	/** основная таблица */
+	/** main table */
 	protected $from;
 	/** dao */
 	protected $dao;
-	/** Сортировка */
+	/** order by what */
 	protected $orderby;
-	/** Сортировка по убыванию */
+	/** order by desc */
 	protected $orderbyDesc = false;
-	/** Группировка */
+	/** group by */
 	protected $groupby;
-	/** Условие having */
+	/** having */
 	protected $having;
 	/**
 	 * массив [
@@ -29,13 +31,13 @@ class MySQLOperator {
 	 * ]
 	 */
 	protected $join = [];
-	/** Ограничение */
+	/** Limitation */
 	protected $limit;
-	/** Пропуск */
+	/** Skip */
 	protected $skip;
-	/** Поля */
+	/** Fields */
 	protected $fields = [];
-	/** Условие */
+	/** Condition */
 	protected $condition = 0; // false
 	/** IGNORE (в случае INSERT) */
 	protected $ignore = false;
@@ -146,7 +148,7 @@ class MySQLOperator {
 	 */
 	public function orderBy($what, $desc = false) {
 		$this->orderby = $what;
-		$this->orderbyDesc = false;
+		$this->orderbyDesc = $desc;
 		return $this;
 	}
 
@@ -248,45 +250,6 @@ class MySQLOperator {
 	}
 
 	protected $xResult = null;
-
-	/**
-	 * Если забыть сделать x
-	 */
-	public function fetch_all($schema = null, $func = null) {
-		if (is_callable($schema) && $func == null) {
-			$func = $schema;
-			$schema = null;
-		}
-		if (isset($this->dao) && $schema === null) {
-			$c = get_class($this->dao);
-			if (isset($c::$schema))
-				$schema = $c::$schema;
-		}
-		return $this->x()->fetch_all($schema, $func);
-	}
-
-	/**
-	 * Если забыть сделать x
-	 */
-	public function fetch_assoc($schema = null, $func = null) {
-		if (is_callable($schema) && $func == null) {
-			$func = $schema;
-			$schema = null;
-		}
-		if (isset($this->dao) && $schema === null) {
-			$c = get_class($this->dao);
-			if (isset($c::$schema))
-				$schema = $c::$schema;
-		}
-		return $this->x()->fetch_assoc($schema, $func);
-	}
-
-	/**
-	 * Если забыть сделать x
-	 */
-	public function num_rows() {
-		return $this->x()->num_rows();
-	}
 
 	/**
 	 * Выполнить запрос

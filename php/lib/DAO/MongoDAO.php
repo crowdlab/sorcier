@@ -172,6 +172,7 @@ abstract class MongoDAO implements IDAO {
 	 */
 	protected static function prepare_cond($condition, $is_id = false) {
 		$result = [];
+		if ($condition === null) $condition = [];
 		foreach ($condition as $k => $v) {
 			$r = static::process_condition($k, $v);
 			if (!$r) continue;
@@ -247,9 +248,11 @@ abstract class MongoDAO implements IDAO {
 			$sort = ['_id' => 1], $limit = 0, $skip = 0) {
 		$condition = $this->prepare_cond($condition);
 		$coll = $this->getCollection();
-		\logger\Log::instance()->logInfo('MONGO SELECT',
-			array('condition' => json_encode($condition),
-			      'field'     => json_encode($fields)));
+		$info = [
+			'condition' => json_encode($condition),
+			'fields'    => json_encode($fields)
+		];
+		\logger\Log::instance()->logInfo('MONGO SELECT', $info);
 		$it = count($fields) == 0
 			? $coll->find($condition)
 			: $coll->find($condition, $fields);
@@ -262,6 +265,17 @@ abstract class MongoDAO implements IDAO {
 		if ($it) $it->rewind();
 		return $it;
 	}
+
+	/**
+	 * Functional style select
+	 * @param $fields
+	 * @param $cond
+	 */
+	public function select_fn($fields = [], $cond = null) {
+		$op = new MongoOperator(QueryClass::select, $fields, $cond);
+		return $op->from($this);
+	}
+
 
 	/**
 	 * Make string value of id from MongoID for returned object
