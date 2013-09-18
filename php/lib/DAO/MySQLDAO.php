@@ -292,14 +292,16 @@ abstract class MySQLDAO implements IDAO {
 	/**
 	 * Add table name prefixes to condition fields
 	 */
-	public function prefixCond($cond) {
+	public function prefixCond($cond, $name = null) {
 		if (!is_array($cond)) return $cond;
+		if (!$name)
+			$name = $this->getName();
 		$_cond = $cond;
 		$cond = [];
 		foreach($_cond as $k => $v) {
 			if (strpos($k, '.') === false && strpos($k, '__KEY__') === false &&
 					!in_array(strtolower($k), \DAO\QueryGen::$operators, true))
-				$k = $this->getName().".$k";
+				$k = "$name.$k";
 			$cond[$k] = $v;
 		}
 		return $cond;
