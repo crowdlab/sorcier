@@ -9,6 +9,11 @@ use DAO;
  */
 class FuncNow {
 	public function __toString() { return "NOW()"; }
+
+	public static function imbue() {
+		return new static();
+	}
+
 }
 
 ?>

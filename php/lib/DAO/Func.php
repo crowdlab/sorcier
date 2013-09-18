@@ -14,6 +14,10 @@ class Func {
 		$this->arg = $arg;
 	}
 
+	public static function imbue($name, $arg) {
+		return new static($name, $arg);
+	}
+
 	public function getName() { return $this->name; }
 	public function getArg() { return $this->arg; }
 	public function __toString() { return "{$this->name}('".QueryGen::escape($this->arg)."')"; }
