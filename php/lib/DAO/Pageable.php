@@ -36,6 +36,7 @@ trait Pageable {
 		];
 		$op = $op->limit($items_per_page, ($page - 1) * $items_per_page);
 		$items = $my ? $op->fetch_all() : iterator_to_array($op->x());
+		if ($this instanceof MongoDAO) $items = array_values(static::remapIds($items));
 		return [
 			'items' => $items,
 			'pager' => $pager
