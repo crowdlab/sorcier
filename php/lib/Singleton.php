@@ -30,6 +30,10 @@ trait Singleton {
 		return self::$_instance[$calledClass];
 	}
 
+	public static function i() {
+		return static::getInstance();
+	}
+
 	/**
 	 * Reset instance. Used for debugging/testing purposes.
 	 *
