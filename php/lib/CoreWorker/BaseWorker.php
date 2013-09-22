@@ -1,9 +1,9 @@
 <?php
-namespace CrowdlabWorker;
+namespace CoreWorker;
 require_once __DIR__ . '/../../inc/config.php';
 
 /**
- * Сервис Gearman
+ * Gearman service
  */
 final class BaseWorker {
 	protected static $worker_host = null;

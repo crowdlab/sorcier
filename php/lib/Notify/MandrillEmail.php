@@ -1,6 +1,6 @@
 <?php
 namespace Notify;
-use CrowdlabWorker\BaseWorker;
+use CoreWorker\BaseWorker;
 use Notify;
 use Notify\Type;
 
