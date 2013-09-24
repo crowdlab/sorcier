@@ -157,6 +157,11 @@ class MySQLOperator {
 		return $this;
 	}
 
+	public function group_by($groupby) {
+		$this->groupby = $groupby;
+		return $this;
+	}
+
 	public function groupBy($groupby) {
 		$this->groupby = $groupby;
 		return $this;
