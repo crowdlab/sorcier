@@ -1,6 +1,12 @@
 <?php
 namespace DAO;
 use DAO;
+
+function is_float_string($v) {
+	$rx = '/^([0-9]+)|([0-9]*\.[0-9]+|[0-9]+\.[0-9]*)$/';
+	return preg_match($rx, $v) === 1;
+}
+
 /**
  * Type schema enforcer
  *
@@ -59,6 +65,12 @@ trait Enforcer {
 				case 'datenull':
 					if ($v === null || $v == 'null')
 						$v = null;
+					break;
+				case 'number':
+					if (is_int($v))
+						$v = (int) $v;
+					else if (is_float($v) || is_float_string($v))
+						$v = (float) $v;
 					break;
 				case 'int':
 					$v = intval($v);
