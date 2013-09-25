@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/../lib/autoload.php.inc';
 
+function make_seed() {
+	list($usec, $sec) = explode(' ', microtime());
+	return (float) $sec + ((float) $usec * 100000);
+}
+
 function int_divide($x, $y) {
 	return ($x - ($x % $y)) / $y;
 }
