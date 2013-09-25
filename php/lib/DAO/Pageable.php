@@ -15,7 +15,7 @@ trait Pageable {
 	 * @param $field field to count by (id by default)
 	 * @return [
 	 *	'items' => [...],
-	 *	'pager' => ['no' => 5, 'current' => $page]
+	 *	'pager' => ['no' => 5, 'current' => $page, 'count' => $count]
 	 * ]
 	 */
 	protected function getPageable($op, $page = 1, $items_per_page = 20,
@@ -31,6 +31,7 @@ trait Pageable {
 		}
 		$pager = [
 			'current' => (int) $page,
+			'count'   => (int) $count,
 			'no'      => int_divide($count, $items_per_page)
 						+ ($count % $items_per_page ? 1 : 0)
 		];
