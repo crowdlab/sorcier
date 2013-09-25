@@ -29,6 +29,8 @@ trait Pageable {
 		} else {
 			$count = $op->x()->count();
 		}
+		if ($page < 1)
+			$page = 1;
 		$pager = [
 			'current' => (int) $page,
 			'count'   => (int) $count,
