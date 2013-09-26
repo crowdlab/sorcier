@@ -255,7 +255,7 @@ abstract class MySQLDAO implements IDAO {
 	 *
 	 * @param array $condition
 	 */
-	public function delete($condition) {
+	public function delete($condition = []) {
 		$cond = QueryGen::make_cond($condition);
 		$table_name = static::quoteTableName($this->getName());
 		$q = "DELETE
