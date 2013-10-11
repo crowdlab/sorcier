@@ -35,34 +35,56 @@ function checkMongoId($name, &$rqst = null) {
  * @param  array  $rqst  Optional assoc array ($_REQUEST by default)
  * @return string
  */
-function checkVar($name, &$rqst = null) {
+function checkVar($name, &$rqst = null, $die = true) {
 	if (is_null($rqst)) $rqst = $_REQUEST;
 	$var = isset($rqst[$name]) ? $rqst[$name] : null;
-	if ($var === null) Common::die500("missing $name");
+	if ($var === null) {
+		if ($die)
+			Common::die500("missing $name");
+		else
+			return null;
+	}
 	return $var;
 }
 
 /**
- *  Проверяет наличие целого числа, переданного пользователем
+ * Check if request item is integer
  *
  * @param  string $name  variable name
  * @param  array  $rqst  Optional assoc array ($_REQUEST by default)
- * @return
+ * @return value or null
  */
-function checkInt($name, &$rqst = null) {
+function checkInt($name, &$rqst = null, $die = true) {
 	if (is_null($rqst)) $rqst = $_REQUEST;
 	$var = isset($rqst[$name]) && !is_array($rqst[$name])
 		? preg_match("|^[\d]*$|", $rqst[$name])
 			? $rqst[$name]
-			: Common::die500("bad number format for $name")
-		: Common::die500("empty  or incorrect $name");
+			: ($die ? Common::die500("bad number format for $name") : null)
+		: ($die ? Common::die500("empty  or incorrect $name") : null);
 	return (int) $var;
 }
 
 /**
- * Получить параметр запроса (int) со значением по умолчанию
- * @param $var имя
- * @param $default значение по умолчанию
+ * Check if request item is integer or array
+ */
+function checkIntOrArray($name, &$rqst = null, $die = true) {
+	if (is_null($rqst)) $rqst = $_REQUEST;
+	$var = isset($rqst[$name]) ? $rqst[$name] : null;
+	if ($var === null) {
+		if ($die)
+			Common::die500("missing $name");
+		else
+			return null;
+	}
+	if (is_array($var))
+		return Common::intArray($var);
+	return checkInt($name, $rqst);
+}
+
+/**
+ * Get integer request item w/ default value
+ * @param $name name
+ * @param $default
  */
 function getOptionalInt($name, $default = null, &$rqst = null) {
 	if (is_null($rqst)) $rqst = $_REQUEST;
@@ -74,16 +96,16 @@ function getOptionalInt($name, $default = null, &$rqst = null) {
 }
 
 /**
- * Получить сообщение для возврата ошибки (с переводом)
+ * get error message as array
  */
 function makeError($message) {
 	return ['error' => $message];
 }
 
 /**
- * Получить параметр запроса со значением по умолчанию
- * @param $var имя
- * @param $default значение по умолчанию
+ * Get optional value
+ * @param $name name
+ * @param $default
  */
 function getOptional($name, $default = null, &$rqst = null) {
 	if (is_null($rqst)) $rqst = $_REQUEST;
@@ -104,7 +126,7 @@ function array_append($array1, $array2) {
 }
 
 /**
- * Разница по значениям
+ * Array difference by values for each key
  */
 function array_diff_values($new, $old) {
 	$diff = [];
@@ -165,6 +187,9 @@ function get_mini_memoized($funcname,$args) {
 	return $cachedvals[$key] = call_user_func_array($funcname,$args);
 }
 
+/**
+ * shorthand for creating Tonic response
+ */
 function tonicResponse($code, $value = null) {
 	$v = $value === null ? $value : json_encode($value);
 	return new Tonic\Response($code, $v);
