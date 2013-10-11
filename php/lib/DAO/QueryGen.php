@@ -109,9 +109,9 @@ class QueryGen {
 	 * @readonly
 	 */
 	public static $operators = ['or', '$or', '$in', '<', '>', '<=', '>=', '!=',
-		'<>', '$nin', '$notin', 1, '1', '$lt', '$gt', '$gte', '$lte', '$ne'];
+		'<>', '$nin', '$notin', 1, '1', '$lt', '$gt', '$gte', '$lte', '$ne', '$like', '$notlike'];
 
-	protected static $binary_ops = ['>', '<', '>=', '<=', 'like', '$like', '$gt',
+	protected static $binary_ops = ['>', '<', '>=', '<=', 'notlike', '$notlike', 'like', '$like', '$gt',
 		'$lt', '$gte', '$lte', '$ne'];
 
 	/**
@@ -147,16 +147,25 @@ class QueryGen {
 				$cond_kv []= static::cond_eq($k, $v, $noescape);
 			} else if (in_array($kop, ['$in', '$nin', '$notin'], true)) {
 				$cond_kv []= static::cond_in($k, $v, $current_key);
-			} else if (is_array($v)) {
+			} else if (is_array($v) && is_numeric($k)) {
 				$k = self::prepare_key($k);
 				$cond_kv []= self::make_cond($v, true, $k, $noescape);
 			} else {
 				$k = self::prepare_key($k);
-				$cond_kv []= $v !== null
-					? ($noescape || is_int($v) || is_object($v)
-						? "$k=$v"
-						: "$k='".self::escape($v)."'")
-					: "$k IS NULL";
+				if (is_array($v)) {
+					// multi-binop
+					$vvv = [];
+					foreach($v as $item) {
+						foreach($item as $kk => $vv) {
+							$cond_kv []= static::cond_binop($kk, $vv, $k);
+						}
+					}
+				} else
+					$cond_kv []= $v !== null
+						? ($noescape || is_int($v) || is_object($v)
+							? "$k=$v"
+							: "$k='".self::escape($v)."'")
+						: "$k IS NULL";
 			}
 		}
 		$impl = implode($and ? ' AND ' : ' OR ', $cond_kv);
@@ -209,6 +218,7 @@ class QueryGen {
 	 */
 	protected static function cond_binop($k, $v, $current_key = '', $noescape = false) {
 		$map = [
+			'$notlike' => ' NOT LIKE ',
 			'$like' => ' LIKE ',
 			'$gte'  => '>=',
 			'$lte'  => '<=',
@@ -218,7 +228,7 @@ class QueryGen {
 		];
 		$k = strtolower($k);
 		if (isset($map[$k])) $k = $map[$k];
-		if (!is_array($v) && $current_key) {
+		if (!is_array($v) && !is_numeric($current_key)) {
 			// condition normal order ['a' => ['>' => 5]]
 			if (!$noescape && !is_int($v) && !is_object($v)) {
 				$v = self::escape($v);
