@@ -147,7 +147,9 @@ class QueryGen {
 				$cond_kv []= static::cond_eq($k, $v, $noescape);
 			} else if (in_array($kop, ['$in', '$nin', '$notin'], true)) {
 				$cond_kv []= static::cond_in($k, $v, $current_key);
-			} else if (is_array($v) && is_numeric($k)) {
+			} else if (is_array($v) && count($v)
+				&& (is_numeric($k) || !is_numeric($k) && count($v) == 1 && !isset($v[0]))) {
+				// special: either simple operator cond or array of conditions
 				$k = self::prepare_key($k);
 				$cond_kv []= self::make_cond($v, true, $k, $noescape);
 			} else {
