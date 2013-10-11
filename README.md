@@ -1,4 +1,4 @@
-webcore
+sorcier
 =======
 
 Base library for php web applications
