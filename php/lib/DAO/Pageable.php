@@ -19,12 +19,15 @@ trait Pageable {
 	 * ]
 	 */
 	protected function getPageable($op, $page = 1, $items_per_page = 20,
-			$field = 'id') {
-		$cop = clone($op);
+			$field = 'id', $cop = null) {
+		if ($cop === null)
+			$cop = clone($op);
 		$my = $this instanceof MySQLDAO;
 		if ($my) {
+			if ($field != 1 && $field != '*')
+				$field = "'$field'";
 			$count = $cop
-				->select(\DAO\Sql\Expr::imbue("COUNT('$field')", 'c'))
+				->select(\DAO\Sql\Expr::imbue("COUNT($field)", 'c'))
 				->fetch_assoc()['c'];
 		} else {
 			$count = $op->x()->count();
