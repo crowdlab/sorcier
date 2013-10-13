@@ -52,6 +52,15 @@ abstract class UserSingletonBase {
 	 *
 	 * @return UserSingleton
 	 */
+	public static function i() {
+		return static::getInstance();
+	}
+
+	/**
+	 * Get instance
+	 *
+	 * @return UserSingleton
+	 */
 	public static function getInstance(&$session = null) {
 		if (is_null($session)) $session = & $_SESSION;
 		$calledClass = get_called_class();
