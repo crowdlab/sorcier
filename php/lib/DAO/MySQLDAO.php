@@ -547,5 +547,24 @@ abstract class MySQLDAO implements IDAO {
 	public function fetch_array($r) {
 		return mysqli_fetch_array($r, MYSQL_NUM);
 	}
+
+	/**
+	 * set Operator options
+	 *
+	 * currently supported options: orderby
+	 * @param $op Operator
+	 * @param $opts options: ['column_name' => ['orderby' => 'asc']]
+	 */
+	public function setOptions(\DAO\MySQLOperator $op, array $opts) {
+		foreach($opts as $k => $v) {
+			if (isset($v['orderby'])) {
+				if (isset(static::$schema[$k])
+					&& is_array(static::$schema[$k])
+					&& static::$schema[$k]['orderby'])
+				$op = $op->orderby($k, strtolower($v['orderby']) == 'desc');
+			}
+		}
+		return $op;
+	}
 }
 ?>
