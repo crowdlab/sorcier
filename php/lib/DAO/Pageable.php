@@ -13,13 +13,17 @@ trait Pageable {
 	 * @param $page  current page (1 by default)
 	 * @param $items_per_page
 	 * @param $field field to count by (id by default)
+	 * @param $cop   count operator (for special cases like group by queries)
+	 * @param $ret_schema return schema
+	 *
 	 * @return [
-	 *	'items' => [...],
-	 *	'pager' => ['no' => 5, 'current' => $page, 'count' => $count]
+	 *	'items'  => [...],
+	 *	'schema' => [...],
+	 *	'pager'  => ['no' => 5, 'current' => $page, 'count' => $count]
 	 * ]
 	 */
 	protected function getPageable($op, $page = 1, $items_per_page = 20,
-			$field = 'id', $cop = null) {
+			$field = 'id', $cop = null, $ret_schema = true) {
 		if ($cop === null)
 			$cop = clone($op);
 		$my = $this instanceof MySQLDAO;
@@ -43,10 +47,13 @@ trait Pageable {
 		$op = $op->limit($items_per_page, ($page - 1) * $items_per_page);
 		$items = $my ? $op->fetch_all() : iterator_to_array($op->x());
 		if ($this instanceof MongoDAO) $items = array_values(static::remapIds($items));
-		return [
+		$ret = [
 			'items' => $items,
 			'pager' => $pager
 		];
+		if ($ret_schema && isset(static::$schema))
+			$ret['schema'] = static::$schema;
+		return $ret;
 	}
 }
 ?>

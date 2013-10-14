@@ -23,7 +23,7 @@ trait Enforcer {
 	 * `['json_field' => 'json', 'int_field' => 'int']`
 	 * corresponding fields would be casted to requested types.
 	 *
-	 * Supported types: json, int, bool, intnull, richtext, rm
+	 * Supported types: json, int, bool, intnull, richtext, string, ascii, rm
 	 *   rm is pseudo-type for field removal
 	 *
 	 * @param $schema schema
@@ -38,7 +38,8 @@ trait Enforcer {
 					&& (is_null($v) || is_array($v) && !count($v)))
 				$unsetf[] = $k;
 			if (!isset($schema[$k])) continue;
-			switch($schema[$k]) {
+			$type = is_array($schema[$k]) ? $schema[$k]['type'] : $schema[$k];
+			switch($type) {
 				case 'rm':
 					$unsetf []= $k;
 					continue;
@@ -85,6 +86,7 @@ trait Enforcer {
 				case 'richtext':
 					$v = \Common::prepare_message($v);
 					break;
+				case 'string':
 				default:
 					// unknown type
 					break;

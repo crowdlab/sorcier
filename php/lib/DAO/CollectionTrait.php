@@ -97,7 +97,9 @@ trait CollectionTrait {
 			// enforce query schema on value
 			if (isset(static::$schema)) {
 				if (isset(static::$schema[static::IdKey])) {
-					if (static::$schema[static::IdKey] == 'mongoid') {
+					$mt = 'mongoid';
+					if (static::$schema[static::IdKey] == $mt ||
+						is_array(static::$schema[static::IdKey]) && static::$schema[static::IdKey]['type'] == $mt) {
 						$value[static::IdKey] = static::make_id($value[static::IdKey]);
 					}
 				}
