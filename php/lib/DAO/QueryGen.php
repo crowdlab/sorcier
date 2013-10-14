@@ -109,10 +109,11 @@ class QueryGen {
 	 * @readonly
 	 */
 	public static $operators = ['or', '$or', '$in', '<', '>', '<=', '>=', '!=',
-		'<>', '$nin', '$notin', 1, '1', '$lt', '$gt', '$gte', '$lte', '$ne', '$like', '$notlike'];
+		'<>', '$nin', '$notin', 1, '1', '$lt', '$gt', '$gte', '$lte', '$ne',
+		'$like', '$notlike'];
 
-	protected static $binary_ops = ['>', '<', '>=', '<=', 'notlike', '$notlike', 'like', '$like', '$gt',
-		'$lt', '$gte', '$lte', '$ne'];
+	protected static $binary_ops = ['>', '<', '>=', '<=', 'notlike', '$notlike',
+		'like', '$like', '$gt', '$lt', '$gte', '$lte', '$ne'];
 
 	/**
 	 * Generate condition
@@ -120,13 +121,13 @@ class QueryGen {
 	 * Comparison operator defaults to '='. E.g. 'a' => 'b' means that field 'a'
 	 * is expected to be equal to string 'b'. Connector between comparisons
 	 * defaults to 'AND'. If you want to make a complex condition, use this form:
-	 * `['OR' => ['a' => 'b', 'c' => 'd']]`, for other operators:
-	 * `['>' => ['a' => 5]]`.
+	 * `['$or' => ['a' => 'b', 'c' => 'd']]`, for other operators:
+	 * `['a' => ['>' => 5]]`.
 	 *
 	 * @param $condition   condition
-	 * @param $and join    params with AND operator (true, default), or OR (false)
+	 * @param $and join    params with AND operator (true, default), or OR
 	 * @param $current_key temporary param for conditions (>, <, etc)
-	 * @param $noescape    do not escape values (for simpler join condition generation)
+	 * @param $noescape    do not escape values (for simpler join condition)
 	 */
 	public static function make_cond($condition, $and = true, $current_key = '',
 			$noescape = false) {
@@ -148,7 +149,8 @@ class QueryGen {
 			} else if (in_array($kop, ['$in', '$nin', '$notin'], true)) {
 				$cond_kv []= static::cond_in($k, $v, $current_key);
 			} else if (is_array($v) && count($v)
-				&& (is_numeric($k) || !is_numeric($k) && count($v) == 1 && !isset($v[0]))) {
+				&& (is_numeric($k) || !is_numeric($k) && count($v) == 1
+				&& !isset($v[0]))) {
 				// special: either simple operator cond or array of conditions
 				$k = self::prepare_key($k);
 				$cond_kv []= self::make_cond($v, true, $k, $noescape);

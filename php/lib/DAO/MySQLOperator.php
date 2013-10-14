@@ -41,15 +41,15 @@ class MySQLOperator {
 	protected $condition = 0; // false
 	/** IGNORE (в случае INSERT) */
 	protected $ignore = false;
-	/** установки SET (в случае UPDATE) */
+	/** SET (in case of UPDATE) */
 	protected $set;
-	/** суффикс (дополнение к запросу) -- пока для INSERT */
+	/** INSERT suffix */
 	protected $suffix;
 	/**
-	 * предикат -- для функциональных условных записей
+	 * functional predicate
 	 *
-	 * с предикатом работают только операторы join
-	 * пример $obj->on($u->isAdmin())->join(...)
+	 * join operator supported only:
+	 * `$obj->on($u->isAdmin())->join(...)`
 	 */
 	protected $predicate = true;
 	/**
@@ -109,9 +109,6 @@ class MySQLOperator {
 		return (strpos($v, ' ') !== false) ? $v : "`$v`";
 	}
 
-	/**
-	 * основная таблица для изменения
-	 */
 	public function in($from) {
 		return $this->from($from);
 	}
@@ -124,16 +121,10 @@ class MySQLOperator {
 		return $this;
 	}
 
-	/**
-	 * основная таблица вставки
-	 */
 	public function into($from) {
 		return $this->from($from);
 	}
 
-	/**
-	 * основная таблица выборки
-	 */
 	public function from($from) {
 		if (is_object($from)) {
 			$this->dao = $from;
@@ -143,9 +134,6 @@ class MySQLOperator {
 		return $this;
 	}
 
-	/**
-	 * Сортировка
-	 */
 	public function orderBy($what, $desc = false) {
 		$this->orderby = $what;
 		$this->orderbyDesc = $desc;
@@ -180,9 +168,9 @@ class MySQLOperator {
 	}
 
 	/**
-	 * Добавить JOIN
-	 * @param $on условие JOIN
-	 * @param $table таблица
+	 * JOIN
+	 * @param $on JOIN condition
+	 * @param $table table
 	 */
 	public function join($table, $on = null, $prefix = '') {
 		if (!$this->predicate) {
@@ -209,6 +197,7 @@ class MySQLOperator {
 
 	/**
 	 * Pre-cache items for
+	 * @param $ids
 	 */
 	public function precache($ids) {
 		if ($this->helper)
@@ -216,7 +205,7 @@ class MySQLOperator {
 	}
 
 	/**
-	 * Предикат
+	 * Predicate for next join
 	 */
 	public function on($cond) {
 		$this->predicate = $cond;
@@ -224,7 +213,7 @@ class MySQLOperator {
 	}
 
 	/**
-	 * Добавить left join
+	 * LEFT JOIN
 	 */
 	public function left_join($table, $on) {
 		if (!$this->predicate) {
@@ -234,9 +223,6 @@ class MySQLOperator {
 		return $this->join($table, $on, 'LEFT');
 	}
 
-	/**
-	 * Добавить условие
-	 */
 	public function where($condition) {
 		if ($this->dao)
 			$condition = $this->dao->prefixCond($condition);
@@ -244,9 +230,6 @@ class MySQLOperator {
 		return $this;
 	}
 
-	/**
-	 * Поля для выборки
-	 */
 	public function select($fields) {
 		if ($this->class != 'select')
 			throw new InvalidArgumentException("incorrect class");
@@ -348,7 +331,7 @@ class MySQLOperator {
 		return $q;
 	}
 	/**
-	 * сгенерировать текст запроса
+	 * generate query text
 	 */
 	public function __toString() {
 		if ($this->condition == null) $this->condition = [];

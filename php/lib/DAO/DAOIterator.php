@@ -6,20 +6,16 @@ use DAO;
  * MySQL selection results iterator
  */
 class DAOIterator implements \Iterator {
-	/** результат запроса */
+	/** query result */
 	protected $result;
-	/** текущая запись */
+	/** current record */
 	protected $row;
-	/** текущая позиция */
+	/** current position */
 	protected $pos;
-	/** объект-модификатор (для сопряжения источников данных) */
+	/** helper object (to enrich records) */
 	protected $helper;
-	/** объект доступа к данным (для схемы) */
 	protected $dao;
 
-	/**
-	 * Построить итератор
-	 */
 	public function __construct($result, $dao = null, $helper = null) {
 		$this->result = $result;
 		$this->pos = 0;

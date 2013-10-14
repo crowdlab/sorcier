@@ -9,9 +9,9 @@ use DAO\QueryClass as QC;
 class MongoOperator {
 	use DAO\Operator\Traits\XHelpers;
 
-	/** класс запроса */
+	/** query class */
 	protected $class;
-	/** основная таблица */
+	/** collection */
 	protected $from;
 	/** dao */
 	protected $dao;
@@ -78,16 +78,10 @@ class MongoOperator {
 		return $this->from($from);
 	}
 
-	/**
-	 * основная таблица вставки
-	 */
 	public function into($from) {
 		return $this->from($from);
 	}
 
-	/**
-	 * основная таблица выборки
-	 */
 	public function from($from) {
 		if (is_object($from)) {
 			$this->dao = $from;
@@ -97,9 +91,6 @@ class MongoOperator {
 		return $this;
 	}
 
-	/**
-	 * Сортировка
-	 */
 	public function orderBy($what, $desc = false) {
 		$this->orderby = $what;
 		$this->orderbyDesc = $desc;
@@ -113,9 +104,6 @@ class MongoOperator {
 		return $this;
 	}
 
-	/**
-	 * Поля для выборки
-	 */
 	public function select($fields) {
 		if ($this->class != 'select')
 			throw new InvalidArgumentException("incorrect class");
@@ -123,16 +111,13 @@ class MongoOperator {
 		return $this;
 	}
 
-	/**
-	 * Добавить условие
-	 */
 	public function where($condition) {
 		$this->condition = $condition;
 		return $this;
 	}
 
 	/**
-	 * Выполнить запрос
+	 * run query
 	 */
 	public function x() {
 		if ($this->xResult) return $this->xResult;

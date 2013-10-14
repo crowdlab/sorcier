@@ -2,9 +2,7 @@
 namespace DAO;
 use DAO;
 /**
- * Управление версиями схемы
- *
- * Для работы портала, скорее всего, не потребуется
+ * Schema version
  */
 class VersionDAO extends MySQLDAO {
 	public function getName() {

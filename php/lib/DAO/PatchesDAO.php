@@ -2,7 +2,7 @@
 namespace DAO;
 use DAO;
 /**
- * Управление изменениями схемы
+ * Schema patches
  */
 class PatchesDAO extends MySQLDAO {
 	public function getName() {
