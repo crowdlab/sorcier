@@ -82,6 +82,8 @@ abstract class BaseHandler extends Tonic\Resource {
 			? $this->lang
 			: null;
 		$r = $cdao->get($id, $cid, $lang);
+		if ($r == null)
+			return tonicResponse(Tonic\Response::NOTFOUND);
 		return tonicResponse(Tonic\Response::OK, $r);
 	}
 }
