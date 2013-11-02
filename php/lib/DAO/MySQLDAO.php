@@ -302,6 +302,15 @@ abstract class MySQLDAO implements IDAO {
 			if (strpos($k, '.') === false && strpos($k, '__KEY__') === false &&
 					!in_array(strtolower($k), \DAO\QueryGen::$operators, true))
 				$k = "$name.$k";
+			if (in_array(strtolower($k), \DAO\QueryGen::$operators, true)
+					&& is_array($v) && !is_assoc($v)) {
+				$vv = $v;
+				foreach ($vv as $kk => &$vvv) {
+					if (is_array($vvv) && is_assoc($vvv))
+						$vvv = static::prefixCond($vvv);
+				}
+				$v = $vv;
+			}
 			$cond[$k] = $v;
 		}
 		return $cond;
