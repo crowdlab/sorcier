@@ -1,6 +1,7 @@
 <?php
 namespace DAO;
 use DAO;
+require_once __DIR__.'/../../inc/common.php.inc';
 /**
  * MySQL DAO: if you want to interact with MySQL, please extend this
  */
@@ -303,7 +304,7 @@ abstract class MySQLDAO implements IDAO {
 					!in_array(strtolower($k), \DAO\QueryGen::$operators, true))
 				$k = "$name.$k";
 			if (in_array(strtolower($k), \DAO\QueryGen::$operators, true)
-					&& is_array($v) && !is_assoc($v)) {
+					&& is_array($v) && !\is_assoc($v)) {
 				$vv = $v;
 				foreach ($vv as $kk => &$vvv) {
 					if (is_array($vvv) && is_assoc($vvv))
