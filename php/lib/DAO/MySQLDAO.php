@@ -503,11 +503,15 @@ abstract class MySQLDAO implements IDAO {
 		$row = $r instanceof \mysqli_result
 			? mysqli_fetch_assoc($r)
 			: $r->fetch_assoc();
-		if (is_callable($schema))
+		if (is_callable($schema)) {
 			$func = $schema;
-		if (($schema === null || is_callable($schema))
-				&& isset(static::$schema))
-			$schema = static::$schema;
+			$schema = null;
+		}
+		if (isset(static::$schema)) {
+			$schema = ($schema === null)
+				? static::$schema
+				: array_merge(static::$schema, $schema);
+		}
 		if (is_array($schema) && is_array($row))
 			$row = self::enforce($schema, $row);
 		return $func && $row

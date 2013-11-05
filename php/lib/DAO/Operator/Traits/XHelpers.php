@@ -17,7 +17,9 @@ trait XHelpers {
 		if (isset($this->dao) && $schema === null) {
 			$c = get_class($this->dao);
 			if (isset($c::$schema))
-				$schema = $c::$schema;
+				$schema = ($schema === null)
+					? $c::$schema
+					: array_merge($schema, $c::$schema);
 		}
 		return $this->x()->fetch_all($schema, $func);
 	}
@@ -30,10 +32,12 @@ trait XHelpers {
 			$func = $schema;
 			$schema = null;
 		}
-		if (isset($this->dao) && $schema === null) {
+		if (isset($this->dao)) {
 			$c = get_class($this->dao);
 			if (isset($c::$schema))
-				$schema = $c::$schema;
+				$schema = ($schema === null)
+					? $c::$schema
+					: array_merge($schema, $c::$schema);
 		}
 		return $this->x()->fetch_assoc($schema, $func);
 	}
