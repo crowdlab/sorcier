@@ -287,10 +287,10 @@ class MySQLOperator {
 			" FROM {$this->from} $join WHERE $cond";
 		if ($this->groupby) {
 			$q .= " GROUP BY {$this->groupby}";
-			if ($this->having) {
-				$q .= " HAVING " .
-					QueryGen::make_cond($this->having);
-			}
+		}
+		if ($this->having) {
+			$q .= " HAVING " .
+				QueryGen::make_cond($this->having);
 		}
 		if ($this->orderby) {
 			$q .= " ORDER BY {$this->orderby}";
