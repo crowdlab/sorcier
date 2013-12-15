@@ -55,6 +55,10 @@ abstract class MySQLDAO implements IDAO {
 		$this->started = true;
 	}
 
+	public function begin() {
+		return $this->start();
+	}
+
 	/**
 	 * Roll back transaction
 	 */
