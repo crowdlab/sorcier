@@ -1,0 +1,3 @@
+" vim: set ft=vim:
+" http://www.vim.org/scripts/script.php?script_id=1860
+setlocal ff=unix
