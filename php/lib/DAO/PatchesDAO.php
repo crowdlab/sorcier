@@ -1,12 +1,14 @@
 <?php
+
 namespace DAO;
-use DAO;
+
 /**
- * Schema patches
+ * Schema patches.
  */
-class PatchesDAO extends MySQLDAO {
-	public function getName() {
-		return 'patches';
-	}
+class PatchesDAO extends MySQLDAO
+{
+    public function getName()
+    {
+        return 'patches';
+    }
 }
-?>

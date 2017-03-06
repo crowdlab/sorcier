@@ -1,9 +1,12 @@
 <?php
+
 namespace DAO;
+
 use DAO;
+
 /**
- * DAO Exception
+ * DAO Exception.
  */
-class Exception extends \Exception {
+class Exception extends \Exception
+{
 }
-?>

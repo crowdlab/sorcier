@@ -1,98 +1,122 @@
 <?php
 /**
- * user operations should extend this
+ * user operations should extend this.
  */
-abstract class UserSingletonBase {
-	protected static $instance;
-	protected $user;
-	protected $session;
+abstract class UserSingletonBase
+{
+    protected static $instance;
+    protected $user;
+    protected $session;
 
-	final private function __construct(&$session) {
-		$this->session = & $session;
-		if (isset($this->session['user']))
-			$this->user = $this->session['user'];
-		else
-			$this->user = [];
-	}
+    final private function __construct(&$session)
+    {
+        $this->session = &$session;
+        if (isset($this->session['user'])) {
+            $this->user = $this->session['user'];
+        } else {
+            $this->user = [];
+        }
+    }
 
-	public function saveSession() {
-		if (isset($this->user))
-			$this->session['user'] = $this->user;
-	}
+    public function saveSession()
+    {
+        if (isset($this->user)) {
+            $this->session['user'] = $this->user;
+        }
+    }
 
-	public static function setInstance($inst) {
-		$calledClass = get_called_class();
-		static::$instance[$calledClass] = $inst;
-	}
+    public static function setInstance($inst)
+    {
+        $calledClass = get_called_class();
+        static::$instance[$calledClass] = $inst;
+    }
 
-	final private function __clone() { }
+    final private function __clone()
+    {
+    }
 
-	private function __wakeup() {  }
+    private function __wakeup()
+    {
+    }
 
-	/**
-	 * This function returns whether user is actually logged in
-	 *
-	 * @return bool
-	 */
-	public static function canInstance(&$session = null) {
-		if (is_null($session)) $session = & $_SESSION;
-		return isset($session['user']);
-	}
+    /**
+     * This function returns whether user is actually logged in.
+     *
+     * @return bool
+     */
+    public static function canInstance(&$session = null)
+    {
+        if (is_null($session)) {
+            $session = &$_SESSION;
+        }
 
-	/**
-	 * Reset instance. Used for debugging/testing purposes.
-	 */
-	public static function reset() {
-		if (!is_null(static::$instance))
-			static::$instance = null;
-	}
+        return isset($session['user']);
+    }
 
-	/**
-	 * Get instance
-	 *
-	 * @return UserSingleton
-	 */
-	public static function i() {
-		return static::getInstance();
-	}
+    /**
+     * Reset instance. Used for debugging/testing purposes.
+     */
+    public static function reset()
+    {
+        if (!is_null(static::$instance)) {
+            static::$instance = null;
+        }
+    }
 
-	/**
-	 * Get instance
-	 *
-	 * @return UserSingleton
-	 */
-	public static function getInstance(&$session = null) {
-		if (is_null($session)) $session = & $_SESSION;
-		$calledClass = get_called_class();
-		if (!isset(static::$instance[$calledClass])
-			|| is_null(static::$instance[$calledClass])
-		) {
-			static::$instance[$calledClass] = new $calledClass($session);
-		}
-		return static::$instance[$calledClass];
-	}
+    /**
+     * Get instance.
+     *
+     * @return UserSingleton
+     */
+    public static function i()
+    {
+        return static::getInstance();
+    }
 
-	/**
-	 * Get user info
-	 *
-	 * @return array
-	 */
-	public function getUser() {
-		return $this->user;
-	}
+    /**
+     * Get instance.
+     *
+     * @return UserSingleton
+     */
+    public static function getInstance(&$session = null)
+    {
+        if (is_null($session)) {
+            $session = &$_SESSION;
+        }
+        $calledClass = get_called_class();
+        if (!isset(static::$instance[$calledClass])
+            || is_null(static::$instance[$calledClass])
+        ) {
+            static::$instance[$calledClass] = new $calledClass($session);
+        }
 
-	protected function postLogout() { }
+        return static::$instance[$calledClass];
+    }
 
-	/**
-	 * Finish session
-	 */
-	public function logout() {
-		unset($this->user);
-		unset($this->session['user']);
-		static::$instance = null;
-		$this->postLogout();
-		return ['message' => 'ok'];
-	}
+    /**
+     * Get user info.
+     *
+     * @return array
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    protected function postLogout()
+    {
+    }
+
+    /**
+     * Finish session.
+     */
+    public function logout()
+    {
+        unset($this->user);
+        unset($this->session['user']);
+        static::$instance = null;
+        $this->postLogout();
+
+        return ['message' => 'ok'];
+    }
 }
-
-?>
