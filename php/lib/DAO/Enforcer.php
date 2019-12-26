@@ -2,6 +2,8 @@
 
 namespace DAO;
 
+use Common;
+
 function is_float_string($v)
 {
     $rx = '/^([0-9]+)|([0-9]*\.[0-9]+|[0-9]+\.[0-9]*)$/';
@@ -29,9 +31,10 @@ trait Enforcer
      * Supported types: json, int, bool, intnull, richtext, string, ascii, rm
      *   rm is pseudo-type for field removal
      *
-     * @param $schema schema
-     * @param $row    value
-     * @param $optional optional fields (not returned if null)
+     * @param array $schema schema
+     * @param array $row    value
+     * @param array $optional optional fields (not returned if null)
+     * @return mixed
      */
     public static function enforce($schema, $row, $optional = [])
     {
@@ -56,7 +59,7 @@ trait Enforcer
                 case 'ascii':
                     if (!is_null($v) && !is_array($v) && $v !== '') {
                         if (!preg_match('/^[a-z][a-z0-9\-]*$/', $v)) {
-                            $v = str_replace(\Common::$toreplace, \Common::$replacement, $v);
+                            $v = str_replace(Common::$toReplace, Common::$replacement, $v);
                             $v = strtolower($v);
                             $v = preg_replace('/[^a-z0-9\-]/', '', $v);
                             if (!preg_match('/^[a-z]/', $v)) {
@@ -100,7 +103,7 @@ trait Enforcer
                     }
                     break;
                 case 'richtext':
-                    $v = \Common::prepare_message($v);
+                    $v = Common::prepare_message($v);
                     break;
                 case 'string':
                 default:

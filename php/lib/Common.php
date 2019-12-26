@@ -16,7 +16,7 @@ final class Common
     /**
      * Translit replace helpers.
      */
-    public static $toreplace = [
+    public static $toReplace = [
         'Ä', 'ä', 'Æ', 'æ', 'Ǽ', 'ǽ', 'Å', 'å', 'Ǻ', 'ǻ', 'À', 'Á', 'Â', 'Ã', 'à', 'á', 'â', 'ã', 'Ā', 'ā', 'Ă', 'ă', 'Ą', 'ą', 'Ǎ', 'ǎ', 'Ạ', 'Ạ', 'ạ', 'Ả', 'ả', 'Ấ', 'ấ', 'Ầ', 'ầ', 'Ẩ', 'ẩ', 'Ẫ', 'ẫ', 'Ậ', 'ậ', 'Ắ', 'ắ', 'Ằ', 'ằ', 'Ẳ', 'ẳ', 'Ẵ', 'ẵ', 'Ặ', 'ặ',
         'Ç', 'ç', 'Ć', 'ć', 'Ĉ', 'ĉ', 'Ċ', 'ċ', 'Č', 'č',
         'Ð', 'ð', 'Ď', 'ď', 'Đ', 'đ',
@@ -95,13 +95,16 @@ final class Common
             self::$tidy = new tidy();
         }
         $s = self::$tidy->repairString($s, [], 'utf8');
-        // taken from CodeIgniter
         $s = preg_replace("#<([^><]+?)([^a-z_\-]on\w*|xmlns)(\s*=\s*[^><]*)([><]*)#i",
             '<\\1\\4', $s);
 
         return self::strip_tags_smart($s, $allowed_tags);
     }
 
+    /**
+     * @param $kv
+     * @return mixed
+     */
     public static function chpuPreprocess($kv)
     {
         if (isset($kv['chpu'])) {
@@ -111,13 +114,14 @@ final class Common
         foreach ($kv as $v) {
             return $v;
         }
+        return null;
     }
 
     /**
      * Строка имеет префикс
      *
-     * @param $haystack строка
-     * @param $needle   префикс
+     * @param string $haystack строка
+     * @param string $needle   префикс
      *
      * @return bool
      */
@@ -130,6 +134,9 @@ final class Common
 
     /**
      * разница между массивами с учетом вложенности.
+     * @param array $array1
+     * @param array $array2
+     * @return array
      */
     public static function array_diff_assoc_recursive($array1, $array2)
     {
@@ -155,8 +162,8 @@ final class Common
     /**
      * Строка имеет суффикс
      *
-     * @param $haystack строка
-     * @param $needle   суффикс
+     * @param string $haystack строка
+     * @param string $needle   суффикс
      *
      * @return bool
      */
@@ -422,6 +429,8 @@ final class Common
 
     /**
      * Сделать ссылки из адресов.
+     * @param $text
+     * @return string|string[]|null
      */
     public static function fix_urls($text)
     {
@@ -432,9 +441,9 @@ final class Common
     /**
      * Подготовить сообщение к отправке.
      *
-     * @param $text         текст
-     * @param $allowed_tags допустимые теги
-     * @param $replace_br   заменять переводы строк
+     * @param string $text         текст
+     * @param array|null $allowed_tags допустимые теги
+     * @param bool $replace_br   заменять переводы строк
      *
      * @return mixed
      *

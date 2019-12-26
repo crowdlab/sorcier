@@ -2,14 +2,16 @@
 
 namespace Testing;
 
+use Connector;
 use Mockery as m;
+use PHPUnit\Framework\TestCase;
 
 include_once __DIR__.'/../../inc/config.php';
 
 /**
  * Core test.
  */
-abstract class CoreTestBase extends \PHPUnit_Framework_TestCase
+abstract class CoreTestBase extends TestCase
 {
     protected static function customSetUpBeforeClass()
     {
@@ -32,30 +34,30 @@ abstract class CoreTestBase extends \PHPUnit_Framework_TestCase
         global $config;
         // просто ресет получается из PHPUnit'а
         // хотя и без этого выставятся правильные коннекторы
-        \Connector::getInstance()->setAll($config);
+        Connector::getInstance()->setAll($config);
     }
 
     /**
      * Предодготовка для тестов.
      */
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         self::setTestConnectors();
         static::customSetUpBeforeClass();
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         static::customSetUp();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         m::close();
         static::customTearDown();
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         static::customTearDownAfterClass();
     }

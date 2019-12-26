@@ -1,4 +1,4 @@
-<phpunit logIncompleteSkipped="false">
+<phpunit>
 	<groups>
 		<exclude>
 			<group>slow</group>

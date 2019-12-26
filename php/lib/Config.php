@@ -7,7 +7,12 @@ class Config
         return static::get('proto').'://'.static::get('host');
     }
 
-    /** get config value */
+    /** get config value
+     * @param $v
+     * @param null $default
+     * @param null $config
+     * @return mixed|void|null
+     */
     public static function get($v, $default = null, $config = null)
     {
         if ($config == null) {

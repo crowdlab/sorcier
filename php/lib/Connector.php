@@ -1,14 +1,11 @@
 <?php
 
-// require_once __DIR__ . '/../inc/config.php';
-require_once 'swift_required.php';
-// TODO (max): make Connectors for CometRP and Hybrid_Auth
 /**
  * Коннекторы к базам и системам используемым в проекте.
  */
 final class Connector
 {
-    use \Singleton;
+    use Singleton;
 
     private $elasticInst = null;
     private $mailInst = null;
@@ -17,49 +14,7 @@ final class Connector
     private $redisInst = null;
 
     /**
-     * @return \Elastica\Index
-     */
-    public function getElastic()
-    {
-        if (is_null($this->elasticInst)) {
-            self::setElastic();
-        }
-
-        return $this->elasticInst;
-    }
-
-    /**
-     * Checks that ElasticSearch is working correctly.
-     *
-     * @return bool
-     */
-    public function getElasticStatus()
-    {
-        try {
-            self::getElastic()->getStatus(); // просто вызов на доступность
-        } catch (\Elastica\Exception\ClientException $ex) {
-            \logger\Log::instance()->logCrit('Elastica probably down', $ex->getMessage());
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * @return \Swift_Mailer
-     */
-    public function getMail()
-    {
-        if (is_null($this->mailInst)) {
-            self::setMail();
-        }
-
-        return $this->mailInst;
-    }
-
-    /**
-     * @return \MongoClient
+     * @return MongoClient
      */
     public function getMongo()
     {
@@ -71,7 +26,7 @@ final class Connector
     }
 
     /**
-     * @param $reconnect переподключиться
+     * @param bool $reconnect переподключиться
      *
      * @return \mysqli
      */
@@ -113,7 +68,7 @@ final class Connector
         if (!isset($config['elastic_host']) ||
             !isset($config['elastic_port']) ||
             !isset($config['elastic_index'])) {
-            \logger\Log::instance()->logCrit('Elastica configs not setted', $config);
+            \logger\Log::instance()->logCrit('Elastica configs not sett', $config);
             // Пользователю можно и не знать об этом,
             // но в коде следует проверять доступность подсистемы через getElasticStatus
             return;
@@ -171,13 +126,13 @@ final class Connector
             return;
         }
         try {
-            $this->mongoInst = new \MongoClient(
+            $this->mongoInst = new MongoClient(
                 "mongodb://${config['mongo_host']}:${config['mongo_port']}",
                 ['connectTimeoutMS' => 1000]);
         } catch (MongoException $ex) {
             \logger\Log::instance()->logCrit('Mongo init error', $ex->getMessage());
             if ($config['daemon']) {
-                return false;
+                return;
             }
             \Common::die500('database error');
         }
@@ -205,7 +160,7 @@ final class Connector
         if (!$this->mysqlInst) {
             \logger\Log::instance()->logCrit('MySQL init error');
             if (isset($config['daemon']) && $config['daemon']) {
-                return false;
+                return;
             }
             \Common::die500('database error');
         }
@@ -224,7 +179,6 @@ final class Connector
             \logger\Log::instance()->logCrit('Redis configs not set', $config);
             // Пользователю можно и не знать об этом
             return;
-            // TODO (max): make getRedisStatus
         }
         try {
             $this->redisInst = new \Redis();

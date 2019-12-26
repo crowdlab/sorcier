@@ -10,7 +10,7 @@
 	"proto": "http",
 	"host": "mindhunters.cc",
     "logs": {
-        "path": "/var/webcore/logs/test/",
+        "path": "/tmp/webcore/logs/test/",
         "default": 6
     }
 }
