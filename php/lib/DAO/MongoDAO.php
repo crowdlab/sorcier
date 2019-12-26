@@ -44,6 +44,7 @@ abstract class MongoDAO implements IDAO
         if (!$this->collection) {
             throw new DAO\Exception('bad data source for '.$this->getName());
         }
+
         return $this->collection;
     }
 

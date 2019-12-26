@@ -433,7 +433,7 @@ abstract class MySQLDAO implements IDAO
                 echo "error indexing user $id\n";
                 echo $e->getMessage();
             }
-            ++$count;
+            $count++;
         }
 
         return $count;

@@ -5,7 +5,7 @@
  * @class MongoDAOTest
  */
 require_once __DIR__.'/../../../php/lib/autoload.php.inc';
-use \DAO\MongoDAO;
+use DAO\MongoDAO;
 
 /*
  * @backupStaticAttributes disabled
