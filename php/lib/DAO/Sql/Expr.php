@@ -13,8 +13,8 @@ class Expr
     private $as;
 
     /**
-     * @param string $expr выражение
-     * @param string|null $as псевдоним
+     * @param string      $expr выражение
+     * @param string|null $as   псевдоним
      */
     public function __construct($expr, $as = null)
     {

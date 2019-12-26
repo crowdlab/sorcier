@@ -154,10 +154,10 @@ class QueryGen
      * `['$or' => ['a' => 'b', 'c' => 'd']]`, for other operators:
      * `['a' => ['>' => 5]]`.
      *
-     * @param array $condition   condition
-     * @param bool $and join    params with AND operator (true, default), or OR
+     * @param array  $condition   condition
+     * @param bool   $and         join    params with AND operator (true, default), or OR
      * @param string $current_key temporary param for conditions (>, <, etc)
-     * @param bool $noescape    do not escape values (for simpler join condition)
+     * @param bool   $noescape    do not escape values (for simpler join condition)
      */
     public static function make_cond($condition, $and = true, $current_key = '',
             $noescape = false)
@@ -206,6 +206,7 @@ class QueryGen
             }
         }
         $impl = implode($and ? ' AND ' : ' OR ', $cond_kv);
+
         return count($condition) > 0
             ? (count($cond_kv) > 1 ? "($impl)" : $impl)
             : '1';
@@ -213,9 +214,11 @@ class QueryGen
 
     /**
      * Process in/not in operator in condition.
-     * @param string $k
+     *
+     * @param string      $k
      * @param array|mixed $v
-     * @param string $current_key
+     * @param string      $current_key
+     *
      * @return string
      */
     protected static function cond_in($k, $v, $current_key = '')
@@ -247,8 +250,9 @@ class QueryGen
 
     /**
      * @param string $k
-     * @param array $v
-     * @param bool $noescape
+     * @param array  $v
+     * @param bool   $noescape
+     *
      * @return string
      */
     protected static function cond_eq($k, $v, $noescape = false)
@@ -270,10 +274,12 @@ class QueryGen
 
     /**
      * process binary op in condition.
+     *
      * @param $k
      * @param $v
      * @param string $current_key
-     * @param bool $noescape
+     * @param bool   $noescape
+     *
      * @return string
      */
     protected static function cond_binop($k, $v, $current_key = '', $noescape = false)
