@@ -2,7 +2,6 @@
 
 namespace Testing;
 
-use Connector;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 
