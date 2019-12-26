@@ -3,7 +3,7 @@
 require_once __DIR__.'/../../../php/lib/autoload.php.inc';
 
 /*
- * Query generator test
+ * Query generator tests
  * @outputBuffering disabled
  * @backupGlobals disabled
  * @backupStaticAttributes disabled
@@ -45,30 +45,29 @@ class QueryGenTest extends Testing\CoreTestBase
         $fixture = [];
         $this->assertEquals(('1'), DAO\QueryGen::make_cond($fixture));
         $fixture = ['a' => 'b'];
-        $this->assertEquals(("(`a`='b')"), DAO\QueryGen::make_cond($fixture));
+        $this->assertEquals(("`a`='b'"), DAO\QueryGen::make_cond($fixture));
         $fixture = ['a' => null];
-        $this->assertEquals('(`a` IS NULL)', DAO\QueryGen::make_cond($fixture));
+        $this->assertEquals('`a` IS NULL', DAO\QueryGen::make_cond($fixture));
         $fixture = ['<>' => ['a' => null]];
-        $this->assertEquals('(`a` IS NOT NULL)', DAO\QueryGen::make_cond($fixture));
+        $this->assertEquals('`a` IS NOT NULL', DAO\QueryGen::make_cond($fixture));
         $fixture = ['!=' => ['a' =>'b']];
-        $this->assertEquals(("(`a`<>'b')"), DAO\QueryGen::make_cond($fixture));
+        $this->assertEquals(("`a`<>'b'"), DAO\QueryGen::make_cond($fixture));
         $fixture = ['>' => ['a' => 5]];
-        $this->assertEquals(('((`a`>5))'), DAO\QueryGen::make_cond($fixture));
+        $this->assertEquals(('(`a`>5)'), DAO\QueryGen::make_cond($fixture));
 
         // or
         $fixture = ['$or' => ['a' => 5, 'b' => 10]];
-        $this->assertEquals(('((`a`=5 OR `b`=10))'), DAO\QueryGen::make_cond($fixture));
+        $this->assertEquals(('(`a`=5 OR `b`=10)'), DAO\QueryGen::make_cond($fixture));
 
         /* normal order */
         $fixture = ['a' => ['>' => 5]];
-        $this->assertEquals(('(((`a`>5)))'), DAO\QueryGen::make_cond($fixture));
-        // TODO: get rid of multiple ((
+        $this->assertEquals(('(`a`>5)'), DAO\QueryGen::make_cond($fixture));
 
         $f = ['company_id' => 1, '>' => ['last_update' => 5]];
         $this->assertEquals(('(`company_id`=1 AND (`last_update`>5))'), DAO\QueryGen::make_cond($f));
 
         $fixture = ['$in' => ['a' => [1, 2]]];
-        $this->assertEquals(('(`a` IN (1,2))'), DAO\QueryGen::make_cond($fixture));
+        $this->assertEquals(('`a` IN (1,2)'), DAO\QueryGen::make_cond($fixture));
     }
 
     public function testSqlExpr()
@@ -78,13 +77,13 @@ class QueryGenTest extends Testing\CoreTestBase
         $exp = new DAO\Sql\Expr($sql);
         $key = $exp->make_key();
         $fixture = [$key => $num];
-        $this->assertEquals("($sql=$num)", DAO\QueryGen::make_cond($fixture));
+        $this->assertEquals("$sql=$num", DAO\QueryGen::make_cond($fixture));
     }
 
     public function testFunc()
     {
         $fixture = ['a' => new DAO\Func('PASSWORD', 'b')];
-        $this->assertEquals(("(`a`=PASSWORD('b'))"), DAO\QueryGen::make_cond($fixture));
+        $this->assertEquals(("`a`=PASSWORD('b')"), DAO\QueryGen::make_cond($fixture));
         $this->assertEquals(["`a`=PASSWORD('b')"], DAO\QueryGen::make_set_kv($fixture));
         $fixture = [new DAO\Func('PASSWORD', 'b')];
         $this->assertEquals(("(PASSWORD('b'))"), DAO\QueryGen::make_insert($fixture));

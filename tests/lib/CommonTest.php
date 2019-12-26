@@ -23,18 +23,6 @@ class CommonTest extends Testing\CoreTestBase
         $this->assertEquals(Common::strip_tags_clean($fixture, ['b']), $expect);
     }
 
-    public function testFixUrls()
-    {
-        // simple
-        $fixture = 'http://ya.ru/';
-        $result = '<a href="http://ya.ru/">http://ya.ru/</a>';
-        $this->assertEquals($result, \Common::fix_urls($fixture));
-        // with hash
-        $fixture = 'http://ya.ru/#hash';
-        $result = '<a href="http://ya.ru/#hash">http://ya.ru/#hash</a>';
-        $this->assertEquals($result, \Common::fix_urls($fixture));
-    }
-
     public function testArrayDiff()
     {
         $fixture_1 = $fixture_2 = [

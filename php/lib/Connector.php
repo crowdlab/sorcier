@@ -28,7 +28,7 @@ final class Connector
     /**
      * @param bool $reconnect переподключиться
      *
-     * @return \mysqli
+     * @return mysqli
      */
     public function getMySQL($reconnect = false)
     {
@@ -129,7 +129,7 @@ final class Connector
         }
 
         try {
-            $this->mongoInst = new MongoClient(
+            $this->mongoInst = new \MongoClient(
                 "mongodb://${config['mongo_host']}:${config['mongo_port']}",
                 ['connectTimeoutMS' => 1000]);
         } catch (MongoException $ex) {

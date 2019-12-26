@@ -61,7 +61,7 @@ class Log
     /**
      * We need a default argument value in order to add the ability to easily
      * print out objects etc. But we can't use null, 0, false, etc, because those
-     * are often the values the developers will test for. So we'll make one up.
+     * are often the values the developers will tests for. So we'll make one up.
      */
     const NO_ARGUMENTS = 'KLogger::NO_ARGUMENTS';
 

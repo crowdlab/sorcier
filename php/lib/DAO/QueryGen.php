@@ -154,10 +154,10 @@ class QueryGen
      * `['$or' => ['a' => 'b', 'c' => 'd']]`, for other operators:
      * `['a' => ['>' => 5]]`.
      *
-     * @param $condition   condition
-     * @param $and join    params with AND operator (true, default), or OR
-     * @param $current_key temporary param for conditions (>, <, etc)
-     * @param $noescape    do not escape values (for simpler join condition)
+     * @param array $condition   condition
+     * @param bool $and join    params with AND operator (true, default), or OR
+     * @param string $current_key temporary param for conditions (>, <, etc)
+     * @param bool $noescape    do not escape values (for simpler join condition)
      */
     public static function make_cond($condition, $and = true, $current_key = '',
             $noescape = false)
@@ -206,15 +206,17 @@ class QueryGen
             }
         }
         $impl = implode($and ? ' AND ' : ' OR ', $cond_kv);
-        $ret = count($condition) > 0
-            ? (count($cond_kv > 1) ? "($impl)" : $impl)
+        return count($condition) > 0
+            ? (count($cond_kv) > 1 ? "($impl)" : $impl)
             : '1';
-
-        return $ret;
     }
 
     /**
      * Process in/not in operator in condition.
+     * @param string $k
+     * @param array|mixed $v
+     * @param string $current_key
+     * @return string
      */
     protected static function cond_in($k, $v, $current_key = '')
     {
@@ -224,7 +226,8 @@ class QueryGen
         }
         // '$in' => ['column' => ['values']] case
         if (!isset($v[0])) {
-            list($kk, $vv) = each($v);
+            $kk = key($v);
+            $vv = current($v);
         } else {
             $kk = $current_key;
             $vv = $v;
@@ -242,9 +245,17 @@ class QueryGen
             : 'false';
     }
 
+    /**
+     * @param string $k
+     * @param array $v
+     * @param bool $noescape
+     * @return string
+     */
     protected static function cond_eq($k, $v, $noescape = false)
     {
-        list($kk, $vv) = each($v);
+        reset($v);
+        $kk = key($v);
+        $vv = current($v);
         $kk = self::prepare_key($kk);
         if (!is_object($vv)) {
             return $vv !== null
@@ -259,6 +270,11 @@ class QueryGen
 
     /**
      * process binary op in condition.
+     * @param $k
+     * @param $v
+     * @param string $current_key
+     * @param bool $noescape
+     * @return string
      */
     protected static function cond_binop($k, $v, $current_key = '', $noescape = false)
     {
@@ -285,7 +301,8 @@ class QueryGen
             return "($current_key$k$v)";
         } else {
             // condition reverse order ['>' => ['a' => 5]]
-            list($kk, $vv) = each($v);
+            $kk = key($v);
+            $vv = current($v);
             $kk = self::prepare_key($kk);
             if (!$noescape && !is_int($vv) && !is_object($vv)) {
                 $vv = self::escape($vv);

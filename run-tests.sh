@@ -1,1 +1,1 @@
-./vendor/bin/phpunit --configuration phpunit.xml test
+./vendor/bin/phpunit --configuration phpunit.xml tests

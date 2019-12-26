@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 include_once __DIR__.'/../../inc/config.php';
 
 /**
- * Core test.
+ * Core tests.
  */
 abstract class CoreTestBase extends TestCase
 {
@@ -29,20 +29,11 @@ abstract class CoreTestBase extends TestCase
     {
     }
 
-    protected static function setTestConnectors()
-    {
-        global $config;
-        // просто ресет получается из PHPUnit'а
-        // хотя и без этого выставятся правильные коннекторы
-        Connector::getInstance()->setAll($config);
-    }
-
     /**
      * Предодготовка для тестов.
      */
     public static function setUpBeforeClass(): void
     {
-        self::setTestConnectors();
         static::customSetUpBeforeClass();
     }
 

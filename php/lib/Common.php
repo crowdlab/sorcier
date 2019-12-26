@@ -430,19 +430,6 @@ final class Common
     }
 
     /**
-     * Сделать ссылки из адресов.
-     *
-     * @param $text
-     *
-     * @return string|string[]|null
-     */
-    public static function fix_urls($text)
-    {
-        return preg_replace('@(https?://([-\w\.]+)+(:\d+)?(/([\w/_\-\.]*(\?\S+)?)?)?(\#[\w-\d_\/]+)?)@',
-            '<a href="$1">$1</a>', $text);
-    }
-
-    /**
      * Подготовить сообщение к отправке.
      *
      * @param string     $text         текст
@@ -450,8 +437,6 @@ final class Common
      * @param bool       $replace_br   заменять переводы строк
      *
      * @return mixed
-     *
-     * TODO (vissi): проверить нужно ли использовать функцию там где это делается сейчас
      */
     public static function prepare_message($text, $allowed_tags = null, $replace_br = false)
     {
