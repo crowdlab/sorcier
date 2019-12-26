@@ -16,8 +16,6 @@
 
 namespace Google;
 
-use Google;
-
 class Translater
 {
     /**

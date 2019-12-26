@@ -31,9 +31,10 @@ trait Enforcer
      * Supported types: json, int, bool, intnull, richtext, string, ascii, rm
      *   rm is pseudo-type for field removal
      *
-     * @param array $schema schema
-     * @param array $row    value
+     * @param array $schema   schema
+     * @param array $row      value
      * @param array $optional optional fields (not returned if null)
+     *
      * @return mixed
      */
     public static function enforce($schema, $row, $optional = [])

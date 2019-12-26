@@ -2,8 +2,6 @@
 
 namespace DAO;
 
-use DAO;
-
 /**
  * MySQL selection results iterator.
  */

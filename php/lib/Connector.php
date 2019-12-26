@@ -73,6 +73,7 @@ final class Connector
             // но в коде следует проверять доступность подсистемы через getElasticStatus
             return;
         }
+
         try {
             $elasticaClient = new \Elastica\Client([
                 'host' => $config['elastic_host'],
@@ -102,6 +103,7 @@ final class Connector
             // TODO (max): make getMailStatus
             return;
         }
+
         try {
             $mail_transport = \Swift_SmtpTransport::newInstance()
                 ->setHost($config['mail_host'])
@@ -125,6 +127,7 @@ final class Connector
 
             return;
         }
+
         try {
             $this->mongoInst = new MongoClient(
                 "mongodb://${config['mongo_host']}:${config['mongo_port']}",
@@ -180,6 +183,7 @@ final class Connector
             // Пользователю можно и не знать об этом
             return;
         }
+
         try {
             $this->redisInst = new \Redis();
             $this->redisInst->connect(

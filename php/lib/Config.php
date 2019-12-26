@@ -11,6 +11,7 @@ class Config
      * @param $v
      * @param null $default
      * @param null $config
+     *
      * @return mixed|void|null
      */
     public static function get($v, $default = null, $config = null)

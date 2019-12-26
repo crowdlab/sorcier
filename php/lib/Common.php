@@ -103,6 +103,7 @@ final class Common
 
     /**
      * @param $kv
+     *
      * @return mixed
      */
     public static function chpuPreprocess($kv)
@@ -114,7 +115,6 @@ final class Common
         foreach ($kv as $v) {
             return $v;
         }
-        return null;
     }
 
     /**
@@ -134,8 +134,10 @@ final class Common
 
     /**
      * разница между массивами с учетом вложенности.
+     *
      * @param array $array1
      * @param array $array2
+     *
      * @return array
      */
     public static function array_diff_assoc_recursive($array1, $array2)
@@ -429,7 +431,9 @@ final class Common
 
     /**
      * Сделать ссылки из адресов.
+     *
      * @param $text
+     *
      * @return string|string[]|null
      */
     public static function fix_urls($text)
@@ -441,9 +445,9 @@ final class Common
     /**
      * Подготовить сообщение к отправке.
      *
-     * @param string $text         текст
+     * @param string     $text         текст
      * @param array|null $allowed_tags допустимые теги
-     * @param bool $replace_br   заменять переводы строк
+     * @param bool       $replace_br   заменять переводы строк
      *
      * @return mixed
      *
@@ -458,7 +462,7 @@ final class Common
             $text = str_replace("\n", '<br />',
                 str_replace("\r\n", '<br />', $text));
         }
-        $text = \Common::strip_tags_clean($text, $allowed_tags);
+        $text = self::strip_tags_clean($text, $allowed_tags);
 
         return $text;
     }
@@ -624,6 +628,7 @@ final class Common
         if (!class_exists('MongoId')) {
             return preg_match($regex, $id);
         }
+
         try {
             $tmp = new \MongoId($id);
 
